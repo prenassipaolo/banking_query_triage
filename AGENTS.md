@@ -21,6 +21,9 @@ for learning. The user can override these defaults in conversation.
 - Use type hints and concise Google-style docstrings where useful.
 - Use classes for state or a useful interface; avoid frameworks for hypothetical needs.
 - Check for a simpler solution before adding abstraction or another file.
+- Keep foundational tooling, packaging, editor configuration, and package scaffolding
+  stable during file/documentation cleanup. Propose changes to those separately,
+  with their impact explained.
 - Share logic when it prevents real inconsistency; allow small duplication when
   sharing would couple unrelated behavior or make the code harder to read.
 - Prefer abstract contracts with separate concrete implementations for replaceable

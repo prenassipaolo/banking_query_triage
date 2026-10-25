@@ -53,6 +53,6 @@ make lint
 
 The notebook defaults to saved results; `RUN_EXPERIMENTS=True` reruns training.
 CLI reruns overwrite current artifacts; Run All refreshes notebook views/charts.
-There is no `make experiments` target. Serving/API/LLM work remains in the
-[roadmap](project_plan.md). [Report](experiment_report.md) ·
-[Q&A Markdown](experiments_qa.md) · [offline HTML](experiments_qa.html).
+There is no `make experiments` target.
+Serving/API/LLM work remains in the [README](../README.md).
+[Report](experiment_report.md).

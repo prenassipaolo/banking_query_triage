@@ -82,4 +82,4 @@ make test
 - `make experiments` was removed: it was only an optional alias. The notebook has an explicit `RUN_EXPERIMENTS` switch, default false.
 - CLI reruns overwrite current artifacts; notebook Run All refreshes saved-result views/charts. The narrative report is a snapshot and needs checking after configuration changes.
 - Focused tests cover abstract contracts, native estimator compatibility, reusable specifications, probability validation, calibration/stopping boundaries and freezing selection before test labels. Source fingerprints and save/load checks accompany the current run.
-- [Q&A: Markdown](experiments_qa.md) · [HTML](experiments_qa.html) · [Actual architectural changes](architecture_decisions.md).
+- [Actual architectural changes](architecture_decisions.md).

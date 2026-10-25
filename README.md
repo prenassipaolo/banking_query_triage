@@ -5,8 +5,7 @@
 - [Notebook](notebooks/experiments.ipynb): concrete component composition, saved results, losses and example predictions.
 - **[All results: CSV](artifacts/cv_experiments/results.csv)** · [Detailed record](artifacts/cv_experiments/results.json).
 - [Report](docs/experiment_report.md): seven fixed candidates; selected TF-IDF/SVM test accuracy **89.42%**.
-- Q&A: [Markdown](docs/experiments_qa.md) · [HTML](docs/experiments_qa.html).
-- [Repository guide](docs/repository_guide.md) · [Plan](docs/project_plan.md) · [Decisions](docs/architecture_decisions.md) · [Agent instructions](AGENTS.md).
+- [Repository guide](docs/repository_guide.md) · [Decisions](docs/architecture_decisions.md) · [Agent instructions](AGENTS.md).
 
 ```bash
 uv sync
@@ -14,6 +13,9 @@ uv run python -m notebooks.experiments
 make test
 ```
 
-Single words only; no parameter sweep. API/LLM integration is later work.
+Single words only; no parameter sweep.
+
+**Next:** promote selected reusable components into `src/` for a thin fake API/client,
+then compare LLMs with versioned prompts under the same evaluation protocol.
 
 Replaceable stages implement abstract contracts; native estimators supply fitting and prediction. `Experiment` composes objects, while `ExperimentRunner` owns outer evaluation/refitting. See the [component map](docs/repository_guide.md).

@@ -1,2 +1,2 @@
 def main() -> None:
-    print("Hello from banking-query-triage!")
+    print("Ciao da banking-query-triage!")

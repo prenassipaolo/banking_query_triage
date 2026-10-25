@@ -12,6 +12,7 @@ dependencies = [
     "numpy>=2.5.4",
     "pandas>=3.1.0",
     "scikit-learn>=1.9.1",
+    "xgboost-cpu>=3.4.1",
 ]
 
 [project.scripts]
@@ -23,6 +24,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "ipykernel>=7.4.0",
     "matplotlib>=3.11.2",
     "pydoclint>=0.11.1",
     "pyright>=1.1.414",
@@ -35,6 +37,9 @@ venvPath = "."
 venv = ".venv"
 extraPaths = ["src"]
 typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 [tool.pydoclint]
 style = "google"

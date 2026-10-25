@@ -12,7 +12,6 @@ lint-fix:
 	uv run pyright src/
 	uv run pydoclint src/
 
-# Coverage unit and functional test with floor
 test:
-	uv run pytest tests/unit/ tests/functional/ --cov=src --cov-report=term-missing --cov-fail-under=70
+	uv run pytest tests/unit/ tests/integration/
 

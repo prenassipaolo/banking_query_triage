@@ -1,0 +1,20 @@
+{
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "[python]": {
+        "diffEditor.ignoreTrimWhitespace": false,
+        // "editor.defaultColorDecorators": "never",
+        // "editor.formatOnType": false,
+        // "editor.wordBasedSuggestions": "off",
+        "editor.formatOnSave": false
+    },
+    "editor.formatOnSave": false
+}

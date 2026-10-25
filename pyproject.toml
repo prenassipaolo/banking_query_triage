@@ -7,7 +7,12 @@ authors = [
     { name = "prenassipaolo", email = "prenassipaolo@gmail.com" }
 ]
 requires-python = ">=3.15"
-dependencies = []
+dependencies = [
+    "joblib>=1.6.0",
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
+    "scikit-learn>=1.9.1",
+]
 
 [project.scripts]
 banking-query-triage = "banking_query_triage:main"
@@ -15,3 +20,8 @@ banking-query-triage = "banking_query_triage:main"
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

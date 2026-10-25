@@ -6,6 +6,10 @@ for learning. The user can override these defaults in conversation.
 ## Communicate
 
 - Lead with the result; keep prose short.
+- During work, give short updates about the current action so the user can steer.
+- Begin completion summaries with a one-line goal, followed by the result.
+- Persist general working preferences in agent instructions for future sessions;
+  distinguish repository-local instructions from user-wide preferences.
 - Prefer bullets, tables, formulas, examples, and small diagrams when clearer.
 - Ask targeted questions when uncertainty materially affects the outcome.
 - State minor assumptions; avoid questions about routine, reversible details.
@@ -20,6 +24,9 @@ for learning. The user can override these defaults in conversation.
 - Share logic when it prevents real inconsistency; allow small duplication when
   sharing would couple unrelated behavior or make the code harder to read.
 - Experiment in `notebooks/`; promote selected reusable behavior into `src/`.
+- Keep experiment entry points short; put cohesive helpers in `notebooks/utils/`.
+  Split files by responsibility as they grow; use classes only for useful state
+  or interfaces, not merely to divide a long script.
 - Keep adjustable settings in `config/`; preserve `data/raw/`.
 - Add tests under `tests/unit/` and `tests/integration/` as implementation grows.
 - Docker is available for API runs, integration tests, isolation, and volumes.
@@ -45,3 +52,20 @@ for learning. The user can override these defaults in conversation.
 - Add decision records only for substantive alternatives tried and rejected:
   evidence, choice, reason. Do not document every visible code choice.
 - Add skills or specialized agents only for a concrete recurring need.
+
+## Independent review after implementation
+
+- At the end of each implementation cycle or substantive subcycle, run a
+  separate reviewer agent with fresh context (`fork_turns="none"`).
+- Give the reviewer the intended behavior, constraints, and files to inspect;
+  ask it to challenge correctness, assumptions, clarity, and maintainability.
+- Include a project-wide simplification/ablation pass: what can be removed,
+  merged, or replaced to make behavior easier to understand and debug?
+- Favor quality and expected behavior over code volume, file count, or prose.
+- Discuss material disagreements, apply justified changes, and seek agreement
+  before declaring the cycle complete. Report unresolved concerns honestly.
+- Delete obsolete or unnecessary code/files when safe and in scope; preserve
+  unrelated user work and relevant experiment evidence. Record meaningful
+  rejected approaches briefly in an architectural decision note when useful.
+- Keep review feedback concise and evidence-based. Reviewers do not recursively
+  launch reviewers; the implementing agent owns this review loop.

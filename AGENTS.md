@@ -23,6 +23,11 @@ for learning. The user can override these defaults in conversation.
 - Check for a simpler solution before adding abstraction or another file.
 - Share logic when it prevents real inconsistency; allow small duplication when
   sharing would couple unrelated behavior or make the code harder to read.
+- Prefer abstract contracts with separate concrete implementations for replaceable
+  experiment stages. Compose actual component objects; keep name resolution at the
+  configuration boundary and fitting orchestration separate from estimators.
+- Reuse native estimator constructors, parameters, cloning, and fit/predict through
+  thin native-first inheritance where practical; avoid parallel wrapper frameworks.
 - Experiment in `notebooks/`; promote selected reusable behavior into `src/`.
 - Keep experiment entry points short; put cohesive helpers in `notebooks/utils/`.
   Split files by responsibility as they grow; use classes only for useful state

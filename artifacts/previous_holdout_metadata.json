@@ -1,0 +1,220 @@
+{
+  "candidate": {
+    "id": "word_char_svm_1_calibrated",
+    "features": "word_char",
+    "classifier": "calibrated_svm",
+    "c": 1.0
+  },
+  "policy": {
+    "threshold": 0.6,
+    "accepted": 1755,
+    "coverage": 0.8770614692653673,
+    "review_rate": 0.12293853073463268,
+    "accepted_accuracy": 0.9601139601139601
+  },
+  "score_type": "predict_proba_max",
+  "labels": [
+    "card_arrival",
+    "card_linking",
+    "exchange_rate",
+    "card_payment_wrong_exchange_rate",
+    "extra_charge_on_statement",
+    "pending_cash_withdrawal",
+    "fiat_currency_support",
+    "card_delivery_estimate",
+    "automatic_top_up",
+    "card_not_working",
+    "exchange_via_app",
+    "lost_or_stolen_card",
+    "age_limit",
+    "pin_blocked",
+    "contactless_not_working",
+    "top_up_by_bank_transfer_charge",
+    "pending_top_up",
+    "cancel_transfer",
+    "top_up_limits",
+    "wrong_amount_of_cash_received",
+    "card_payment_fee_charged",
+    "transfer_not_received_by_recipient",
+    "supported_cards_and_currencies",
+    "getting_virtual_card",
+    "card_acceptance",
+    "top_up_reverted",
+    "balance_not_updated_after_cheque_or_cash_deposit",
+    "card_payment_not_recognised",
+    "edit_personal_details",
+    "why_verify_identity",
+    "unable_to_verify_identity",
+    "get_physical_card",
+    "visa_or_mastercard",
+    "topping_up_by_card",
+    "disposable_card_limits",
+    "compromised_card",
+    "atm_support",
+    "direct_debit_payment_not_recognised",
+    "passcode_forgotten",
+    "declined_cash_withdrawal",
+    "pending_card_payment",
+    "lost_or_stolen_phone",
+    "request_refund",
+    "declined_transfer",
+    "Refund_not_showing_up",
+    "declined_card_payment",
+    "pending_transfer",
+    "terminate_account",
+    "card_swallowed",
+    "transaction_charged_twice",
+    "verify_source_of_funds",
+    "transfer_timing",
+    "reverted_card_payment?",
+    "change_pin",
+    "beneficiary_not_allowed",
+    "transfer_fee_charged",
+    "receiving_money",
+    "failed_transfer",
+    "transfer_into_account",
+    "verify_top_up",
+    "getting_spare_card",
+    "top_up_by_cash_or_cheque",
+    "order_physical_card",
+    "virtual_card_not_working",
+    "wrong_exchange_rate_for_cash_withdrawal",
+    "get_disposable_virtual_card",
+    "top_up_failed",
+    "balance_not_updated_after_bank_transfer",
+    "cash_withdrawal_not_recognised",
+    "exchange_charge",
+    "top_up_by_card_charge",
+    "activate_my_card",
+    "cash_withdrawal_charge",
+    "card_about_to_expire",
+    "apple_pay_or_google_pay",
+    "verify_my_identity",
+    "country_support"
+  ],
+  "selection_rule": "Best validation accuracy among LR and calibrated SVM; prefer LR within 0.003 absolute accuracy. Uncalibrated SVM is a reference.",
+  "trained_on": "saved training portion only; no train+validation refit",
+  "fingerprints": {
+    "train_file": "b06e26ac675513959a63135f11b94ea7786ed02da65db93a5650d8838cbc664b",
+    "test_file": "d12d6e3bc4c3103966ae786dc435913c0c563dfa328f5a3646d0e62cfeeb474d",
+    "labels_file": "53261da888122daf2d120d925458631d9619e15d82e56052e7a42e535ce32b63"
+  },
+  "split_sha256": "9d9647455c8d02a5edf013f811f5fe67bc1ae76f6943e55dafe2b51fc1b3192e",
+  "config": {
+    "seed": 42,
+    "train_file": "data/raw/train.csv",
+    "test_file": "data/raw/test.csv",
+    "labels_file": "data/raw/categories.json",
+    "split_dir": "data/processed",
+    "output_dir": "artifacts/experiments",
+    "validation_folds": 5,
+    "calibration_folds": 3,
+    "regularization": [
+      0.1,
+      10.0
+    ],
+    "close_accuracy": 0.01,
+    "simplicity_tolerance": 0.003,
+    "thresholds": [
+      0.0,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      0.95
+    ],
+    "target_accepted_accuracy": 0.95,
+    "minimum_accepted": 30,
+    "features": {
+      "min_df": 2,
+      "word_max_features": 40000,
+      "char_max_features": 60000,
+      "char_ngram_range": [
+        3,
+        5
+      ]
+    },
+    "logistic_regression": {
+      "max_iter": 1000,
+      "tol": 0.0001
+    }
+  },
+  "versions": {
+    "python": "3.15.0rc1",
+    "sklearn": "1.9.1",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "joblib": "1.6.0"
+  },
+  "cross_validation": [
+    {
+      "id": "word_char_lr_10",
+      "fold_accuracies": [
+        0.876311844077961,
+        0.8818897637795275,
+        0.8860142482189727
+      ],
+      "mean_accuracy": 0.8814052853588205,
+      "std_accuracy": 0.003975776740376496
+    },
+    {
+      "id": "word_char_svm_1",
+      "fold_accuracies": [
+        0.8785607196401799,
+        0.884514435695538,
+        0.8848893888263967
+      ],
+      "mean_accuracy": 0.8826548480540382,
+      "std_accuracy": 0.002899030075094835
+    }
+  ],
+  "confirmation": {
+    "selected_id": "word_char_svm_1_calibrated",
+    "test_review_policy": {
+      "threshold": 0.6,
+      "accepted": 2755,
+      "coverage": 0.8944805194805194,
+      "review_rate": 0.10551948051948057,
+      "accepted_accuracy": 0.9568058076225046
+    },
+    "test_excluding_overlap_review_policy": {
+      "threshold": 0.6,
+      "accepted": 2748,
+      "coverage": 0.8942401561991539,
+      "review_rate": 0.10575984380084613,
+      "accepted_accuracy": 0.9566957787481805
+    },
+    "rows": {
+      "train": 8002,
+      "validation": 2001,
+      "test": 3080,
+      "test_excluding_overlap": 3073
+    },
+    "data_checks": {
+      "normalized_duplicate_extra_rows_train": 4,
+      "normalized_duplicate_extra_rows_test": 1,
+      "conflicting_normalized_groups_train": 0,
+      "test_overlap_rows": 7,
+      "train_min_intent_support": 28,
+      "validation_min_intent_support": 7,
+      "validation_max_intent_support": 38
+    },
+    "save_load_equivalence": "exact validation predictions and probabilities",
+    "validation": {
+      "accuracy": 0.9120439780109945,
+      "macro_f1": 0.9093714066692619
+    },
+    "test": {
+      "accuracy": 0.9006493506493507,
+      "macro_f1": 0.9006991475895877
+    },
+    "test_excluding_overlap": {
+      "accuracy": 0.9004230393752034,
+      "macro_f1": 0.9004648341235468
+    }
+  },
+  "status": "Superseded holdout/22-candidate experiment; not current selection."
+}

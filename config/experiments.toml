@@ -1,0 +1,111 @@
+seed = 42
+folds = 5
+threads = 2
+train_file = "data/raw/train.csv"
+test_file = "data/raw/test.csv"
+labels_file = "data/raw/categories.json"
+fold_file = "data/processed/cv5_folds.csv"
+output_dir = "artifacts/cv_experiments"
+review_threshold = 0.7
+
+[preprocessing]
+lowercase = true
+
+[features.common]
+lowercase = false
+min_df = 2
+max_features = 5000
+
+[features.counts]
+
+[features.tfidf]
+sublinear_tf = true
+
+[fit_policies.standard]
+
+[fit_policies.calibrated]
+folds = 5
+seed = 42
+method = "temperature"
+
+[fit_policies.early_stopping]
+folds = 5
+seed = 42
+patience = 10
+
+[models.dummy]
+strategy = "prior"
+
+[models.logistic_regression]
+random_state = 42
+C = 1.0
+max_iter = 1000
+
+[models.svm]
+random_state = 42
+C = 1.0
+max_iter = 2000
+
+[models.naive_bayes]
+alpha = 1.0
+
+[models.random_forest]
+random_state = 42
+n_jobs = 2
+n_estimators = 150
+max_depth = 20
+min_samples_leaf = 2
+
+[models.xgboost]
+n_estimators = 80
+objective = "multi:softprob"
+tree_method = "hist"
+device = "cpu"
+n_jobs = 2
+random_state = 42
+eval_metric = ["merror", "mlogloss"]
+max_depth = 3
+learning_rate = 0.15
+max_bin = 32
+
+[[experiments]]
+name = "dummy"
+features = "counts"
+model = "dummy"
+fit_policy = "standard"
+
+[[experiments]]
+name = "counts_logistic"
+features = "counts"
+model = "logistic_regression"
+fit_policy = "standard"
+
+[[experiments]]
+name = "tfidf_logistic"
+features = "tfidf"
+model = "logistic_regression"
+fit_policy = "standard"
+
+[[experiments]]
+name = "tfidf_svm"
+features = "tfidf"
+model = "svm"
+fit_policy = "calibrated"
+
+[[experiments]]
+name = "counts_naive_bayes"
+features = "counts"
+model = "naive_bayes"
+fit_policy = "standard"
+
+[[experiments]]
+name = "counts_random_forest"
+features = "counts"
+model = "random_forest"
+fit_policy = "standard"
+
+[[experiments]]
+name = "counts_xgboost"
+features = "counts"
+model = "xgboost"
+fit_policy = "early_stopping"

@@ -30,6 +30,10 @@ class ServingInfo:
     confidence_kind: str
     mocked: bool = False
     available: bool = True
+    prompt_version: str | None = None
+    prompt_sha256: str | None = None
+    max_input_bytes: int | None = None
+    max_output_tokens: int | None = None
 
 
 class TriageService:

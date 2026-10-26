@@ -5,7 +5,7 @@ import tomllib
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 
 class OpenAISettings(BaseModel):
@@ -20,7 +20,7 @@ class OpenAISettings(BaseModel):
 
 
 class LocalLLMSettings(BaseModel):
-    """Optional OpenAI-compatible local chat server with JSON-mode support."""
+    """Optional local schema-capable server; context must match its runtime configuration."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -28,7 +28,17 @@ class LocalLLMSettings(BaseModel):
     model: str = Field(default="qwen2.5:0.5b", min_length=1, pattern=r"\S")
     base_url: HttpUrl = HttpUrl("http://127.0.0.1:11434/v1")
     timeout_seconds: float = Field(default=60, gt=0, allow_inf_nan=False)
-    max_output_tokens: int = Field(default=4096, ge=1, strict=True)
+    max_output_tokens: int = Field(default=2048, ge=1, strict=True)
+    context_window_tokens: int = Field(default=8192, ge=1, strict=True)
+
+    @model_validator(mode="after")
+    def check_context_budget(self) -> LocalLLMSettings:
+        """Reserve output space and a 256-token chat-template allowance."""
+        if self.context_window_tokens <= self.max_output_tokens + 256:
+            raise ValueError(
+                "Local context must exceed output limit plus 256 template tokens"
+            )
+        return self
 
 
 class Settings(BaseModel):

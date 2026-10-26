@@ -3,17 +3,190 @@
 **Goal:** start the local API and send banking queries from Swagger, Postman,
 Bruno, curl or the example Python client.
 
-## Start the server
+## Start the local system
 
-Run from the repository root:
+Locally live means the HTTP API is running and can perform inference. SVM and
+Qwen compute on your machine; the OpenAI option sends messages to OpenAI.
+The returned `route`/`review` actions do not forward messages or create review tasks.
+
+### What needs to run?
+
+| You want to use | Start yourself | What is loaded/called automatically |
+| --- | --- | --- |
+| SVM | Banking API with `make api` | Saved SVM artifact, once at API startup |
+| Real OpenAI | Export `OPENAI_API_KEY`, then start the banking API in that same terminal | OpenAI service over HTTPS when an `openai` request arrives |
+| Local Qwen | Ollama service, then banking API | Downloaded Qwen weights when a `local_llm` request arrives |
+| All three | Ollama service plus banking API started with the OpenAI key | Backend selected by each request's `model` field |
+
+```mermaid
+flowchart LR
+    C[Browser or API client] --> A[Banking API: localhost port 8000]
+    A --> S[Saved SVM inside API process]
+    A --> O[External OpenAI service]
+    A --> Q[Optional Ollama service: localhost port 11434]
+    Q --> W[Downloaded Qwen weights]
+```
+
+The API and Ollama are separate programs. `make api` starts the banking API only.
+Ollama can run natively or in Docker; choose one. Jupyter, training, LangChain and
+MCP are not required to serve predictions.
+
+### 1. Prepare the project
+
+Commands below assume Bash and the repository root. On this machine:
 
 ```bash
+cd /home/prenassipaolo/Projects/banking_query_triage
 uv sync --frozen
+```
+
+`uv` and `make` must be installed. `uv` manages the Python environment, so you do
+not need to activate `.venv` manually. The fitted SVM is already shipped; starting
+the API does not require training or running a notebook.
+
+### 2. Start Ollama only if you want Qwen
+
+First check whether an existing service is responding:
+
+```bash
+curl --fail http://127.0.0.1:11434/api/version
+```
+
+If it returns a version, the server is reachable. Reuse it only if it is already
+configured with the required **8,192-token context** and the intended model cache;
+the version endpoint does not verify either setting. If those settings are unknown,
+stop the existing service using its own lifecycle instructions and start it with
+the configuration below. A connection-refused error means you need to start it.
+Choose **A or B**, with only one server on port 11434:
+
+**A. Native Ollama — verified working on this machine.** In terminal A, run:
+
+```bash
+env OLLAMA_HOST=127.0.0.1:11434 \
+    OLLAMA_MODELS="$PWD/.cache/ollama/models" \
+    OLLAMA_CONTEXT_LENGTH=8192 \
+    OLLAMA_NUM_PARALLEL=1 \
+    OLLAMA_MAX_LOADED_MODELS=1 \
+    OLLAMA_KEEP_ALIVE=30m \
+    OLLAMA_NO_CLOUD=true \
+    .cache/ollama/bin/ollama serve
+```
+
+Keep terminal A open. This project-local binary and its cache were installed on
+this machine; they are excluded from Git. If the binary is absent, follow the
+[native installation instructions](local_llms.md#4-current-installation-and-the-two-startup-options)
+first. A system-installed `ollama` can replace `.cache/ollama/bin/ollama` above.
+
+**B. Docker Ollama — optional.** With Docker running and native Ollama stopped:
+
+```bash
+make ollama
+docker compose ps
+```
+
+This starts a detached container. It does not start the banking API. This host
+previously failed to extract the official image; if that happens again, use the
+native option. See the [runtime guide](local_llms.md#docker-alternative) for details.
+
+In another terminal, verify the model is downloaded:
+
+```bash
+curl --fail http://127.0.0.1:11434/api/tags
+```
+
+Look for `qwen2.5:0.5b`. If it is missing, run the command matching your choice:
+
+```bash
+# Native:
+.cache/ollama/bin/ollama pull qwen2.5:0.5b
+# Docker alternative:
+docker compose exec ollama ollama pull qwen2.5:0.5b
+```
+
+The configured Qwen model has already been downloaded on this machine. When launched
+with the commands above, the native and Compose options share `.cache/ollama/models`;
+repeated downloads are unnecessary.
+`[local_llm].enabled` is already true in [serving.toml](../config/serving.toml).
+Keep its `context_window_tokens` aligned with Ollama's 8,192-token context.
+
+### 3. Start the banking API
+
+In terminal B, from the repository root, choose the relevant startup command.
+
+**SVM and/or Qwen, without real OpenAI calls:**
+
+```bash
 make api
 ```
 
-Keep this terminal running. The default address is `http://127.0.0.1:8000`.
-Stop the server with **Ctrl+C**.
+**Real OpenAI calls, optionally alongside SVM and Qwen:** first set `[openai].mode`
+to `"live"` in [serving.toml](../config/serving.toml) if you want missing credentials
+to fail clearly instead of using the default auto-mode mock. Then run:
+
+```bash
+read -rsp "OpenAI API key: " OPENAI_API_KEY
+printf '\n'
+export OPENAI_API_KEY
+make api
+```
+
+Paste the key at the hidden prompt. Keep it out of chat, TOML, request bodies and
+Git. The key must be available to **this API process at startup**. Exporting it
+in another terminal, or after the API has started, does not update the running API.
+This project does not automatically load `.env` files.
+
+Keep terminal B open. Wait for Uvicorn's **Application startup complete** message.
+The API is at `http://127.0.0.1:8000`. If an old API process is already running,
+stop it with Ctrl+C in its terminal before starting the replacement.
+
+### 4. Verify and make a prediction
+
+In terminal C, from the repository root:
+
+```bash
+curl --fail http://127.0.0.1:8000/health
+curl --fail http://127.0.0.1:8000/ready
+make predict
+```
+
+Expected: health reports `"status": "ok"`, readiness reports `"status": "ready"`,
+and `make predict` prints SVM predictions. To check the optional live backends,
+send the relevant request; each real OpenAI request uses your API billing:
+
+```bash
+uv run python examples/call_api.py --model openai
+uv run python examples/call_api.py --model local_llm
+```
+
+| Response | What to confirm |
+| --- | --- |
+| OpenAI | `model` is `openai`, `mocked` is false, version has no `mock:` prefix |
+| Qwen | `model` is `local_llm`, `model_version` is `qwen2.5:0.5b`, `mocked` is false |
+| Either LLM | One prediction per input message, with `action: "review"` |
+
+`GET /models` and `/ready?model=local_llm` report configuration; they do not probe
+an upstream model. A successful prediction is the end-to-end check. Native Qwen
+inference has been verified, but its measured classification accuracy is poor;
+see the [comparison notebook](../notebooks/model_comparison.ipynb).
+
+For a browser interface, open **[Swagger UI](http://127.0.0.1:8000/docs)**, expand
+**POST /predict**, click **Try it out**, choose the `model` in the JSON and execute.
+The request client/browser does not need the OpenAI key; the server holds it.
+
+### Stop, restart and the next day
+
+| Service | Stop it | Start it again |
+| --- | --- | --- |
+| Banking API | Ctrl+C in terminal B | Export the key if using OpenAI, then `make api` |
+| Foreground native Ollama | Ctrl+C in terminal A | Native command from step 2 |
+| Detached native Ollama | Follow the [PID/process instructions](local_llms.md#native-process-use-the-installed-project-local-binary) | Native command from step 2 |
+| Docker Ollama | `make ollama-stop` | `make ollama` |
+
+`ollama stop qwen2.5:0.5b` only unloads the model; it does not shut down Ollama.
+Stopping these services preserves downloaded weights and the fitted SVM artifact.
+After a reboot, start the services you need again; this project does not install
+automatic system startup. A new terminal needs its own key export for real OpenAI
+calls. Restart the banking API after changing its key or serving configuration.
 
 ## Copy and paste into Postman or Bruno
 
@@ -63,7 +236,7 @@ Add `model` to any prediction request; omitting it selects `svm`:
 | --- | --- |
 | `svm` | Loaded TF-IDF/SVM artifact; calibrated confidence and existing route/review threshold |
 | `openai` | OpenAI Responses API using the model configured in `[openai]`, initially `gpt-6-luna` |
-| `local_llm` | Optional local OpenAI-compatible chat server; disabled until configured |
+| `local_llm` | Qwen through a separate schema-capable server; enabled in the supplied TOML |
 
 Use `GET /models` to inspect all backends, `GET /model?model=openai` for one,
 or `GET /ready?model=openai` to check configuration readiness. These endpoints
@@ -89,27 +262,23 @@ LLM and mock predictions return `action: "review"` and `review_threshold: null`.
 `confidence_kind` in model metadata distinguishes `self_reported`,
 `svm_mock_probability` and the SVM's `calibrated_probability`.
 
-For a local model, start an OpenAI-compatible server with JSON-mode support.
-For example, with [Ollama](https://docs.ollama.com/api/openai-compatibility):
+For Qwen, follow [step 2 of the startup sequence](#2-start-ollama-only-if-you-want-qwen)
+to start the separate inference service. See the [local LLM guide](local_llms.md)
+for general chat, other applications and production deployment.
 
-```bash
-ollama serve
-# In another terminal:
-ollama pull qwen2.5:0.5b
-```
-
-Set `[local_llm].enabled = true` in the serving TOML and restart the API. The
-defaults use `http://127.0.0.1:11434/v1` and `qwen2.5:0.5b`; change both for
+`[local_llm].enabled` is true in the supplied TOML; restart the API after changes.
+The defaults use `http://127.0.0.1:11434/v1` and `qwen2.5:0.5b`; change both for
 another server/model. `BQT_LOCAL_LLM_API_KEY` optionally supplies a separate local
 server credential. The OpenAI key is never sent to the local server. No model
-download or provider call happens at API startup. Local model quality has not
-been benchmarked.
+download or provider call happens at API startup. The runtime context must match
+`context_window_tokens` (8,192). The API reserves output/template space and rejects
+oversized local prompts with 422. The [call-flow guide](call_flows.md) explains
+the budget, prompts and batching; the [comparison notebook](../notebooks/model_comparison.ipynb)
+contains the measured train/test pilot.
 
-```bash
-make predict
-uv run python examples/call_api.py --model openai
-uv run python examples/call_api.py --model local_llm
-```
+One request can contain several messages, making one provider call for the list.
+See [grouped calls and the optional OpenAI Batch workflow](call_flows.md#multiple-messages-and-batching)
+for processing a dataset without one request per message.
 
 ## Understand the response
 
@@ -230,6 +399,8 @@ options; they do not need another configuration file for occasional overrides.
 | Symptom | What to check |
 | --- | --- |
 | Connection refused | Start `make api`, wait for startup to complete, and check the port |
+| OpenAI response says `mocked: true` | Export the key in the API terminal before startup and restart; use `[openai].mode = "live"` to fail clearly when the key is missing |
+| Native Ollama command is missing | The ignored project-local binary is not part of a fresh clone; follow the linked native installation guide or choose Docker |
 | HTTP 422 | Check JSON syntax, the `messages` list, nonblank strings and request limits; response `detail` identifies validation errors |
 | HTTP 503 | The model is not ready, local LLM is disabled, or live OpenAI has no key; inspect `/models` and configuration |
 | HTTP 502 | Provider failed, timed out, refused or returned invalid/truncated output; check the provider and configured token limit |

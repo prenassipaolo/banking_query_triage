@@ -82,13 +82,24 @@ def test_wire_contract_allowed_labels_order_and_uncalibrated_review(provider):
         assert body["store"] is False
         assert body["max_output_tokens"] == 512
         schema = body["text"]["format"]["schema"]
+        assert schema["properties"]["predictions"]["minItems"] == 2
+        assert schema["properties"]["predictions"]["maxItems"] == 2
+        assert (
+            schema["$defs"]["LLMClassification"]["properties"]["message_index"][
+                "maximum"
+            ]
+            == 1
+        )
         assert schema["$defs"]["LLMClassification"]["properties"]["category"][
             "enum"
         ] == ["card", "cash"]
         content = json.loads(body["input"])
     else:
         assert requests[0].url.path == "/v1/chat/completions"
-        assert body["response_format"] == {"type": "json_object"}
+        assert body["response_format"]["type"] == "json_schema"
+        assert body["response_format"]["json_schema"]["schema"]["$defs"][
+            "LLMClassification"
+        ]["properties"]["category"]["enum"] == ["card", "cash"]
         assert body["max_tokens"] == 512
         content = json.loads(body["messages"][1]["content"])
     assert content == [
@@ -174,4 +185,60 @@ def test_connection_failures_are_backend_failures(provider):
             512,
         )
         with pytest.raises(BackendFailure, match="LLM request failed"):
+            service.predict(["card"])
+
+
+@pytest.mark.parametrize(
+    "provider, envelope",
+    [
+        ("openai", []),
+        ("openai", {"status": "completed", "output": None}),
+        (
+            "openai",
+            {"status": "completed", "output": [{"type": "message", "content": None}]},
+        ),
+        ("local_llm", []),
+        ("local_llm", {"choices": [None]}),
+        ("local_llm", {"choices": [{"finish_reason": "stop", "message": None}]}),
+    ],
+)
+def test_malformed_provider_envelopes_are_backend_failures(provider, envelope):
+    with OpenAI(
+        api_key="fake",
+        http_client=httpx2.Client(
+            transport=httpx2.MockTransport(
+                lambda request: httpx2.Response(200, json=envelope)
+            )
+        ),
+    ) as client:
+        service = LLMService(
+            provider,
+            "test",
+            SimpleNamespace(info=SimpleNamespace(labels=["card", "cash"])),
+            client,
+            512,
+        )
+        with pytest.raises(BackendFailure):
+            service.predict(["card"])
+
+
+def test_local_context_budget_rejects_before_contacting_provider():
+    from banking_query_triage.llm import BackendInputTooLarge
+
+    def forbidden(request):
+        pytest.fail("Oversized local prompt must not reach the provider")
+
+    with OpenAI(
+        api_key="fake",
+        http_client=httpx2.Client(transport=httpx2.MockTransport(forbidden)),
+    ) as client:
+        service = LLMService(
+            "local_llm",
+            "test",
+            SimpleNamespace(info=SimpleNamespace(labels=["card"])),
+            client,
+            512,
+            max_input_bytes=20,
+        )
+        with pytest.raises(BackendInputTooLarge):
             service.predict(["card"])

@@ -1,0 +1,14 @@
+# Paths are relative to the repository root (root_dir is relative to this file).
+root_dir = ".."
+api_url = "http://127.0.0.1:8000"
+train_file = "data/raw/train.csv"
+test_file = "data/raw/test.csv"
+labels_file = "data/raw/categories.json"
+output_dir = "artifacts/model_comparison"
+models = ["svm", "openai", "local_llm"]
+seed = 42
+per_class = 2
+# Same batch size for all backends; latency means time for a batch, not one message.
+batch_size = 8
+timeout_seconds = 180
+

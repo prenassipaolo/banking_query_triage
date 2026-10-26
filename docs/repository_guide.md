@@ -8,6 +8,12 @@
 | `notebooks/eda.ipynb`, `notebooks/utils/utils.py` | Original user exploration/helpers; preserved |
 | `notebooks/experiments.ipynb`, `experiments.py` | Object composition and saved-result views; short CLI |
 | `config/experiments.toml` | Seven candidates, native estimator settings, explicit fitting policies |
+| `notebooks/model_comparison.ipynb`, `model_comparison.py`, `utils/model_comparison.py` | Matched SVM/OpenAI/Qwen evaluation, batch timings and resumable evidence |
+| `config/model_comparison.toml` | Pilot sampling, datasets, batch size and comparison API settings |
+| `notebooks/openai_batch.py`, `utils/openai_batch.py` | Optional asynchronous OpenAI Batch prepare/submit/status/collect |
+| `compose.yaml` | Optional CPU Ollama service with persistent weights and localhost binding |
+| `docs/call_flows.md`, `local_llms.md` | Routing/prompt diagrams, metric interpretation, local operations and production concepts |
+| `artifacts/model_comparison/` | Pilot predictions/metrics, request evidence, figures and runtime identity |
 | `src/banking_query_triage/preprocessing.py` | Stateless text cleaning used by the fitted serving pipeline |
 | `src/banking_query_triage/inference.py`, `policy.py`, `service.py` | Validated probabilities, category decoding and route/review decisions |
 | `src/banking_query_triage/llm.py` | OpenAI/local LLM inference, validated indexed outputs and explicit offline mock |

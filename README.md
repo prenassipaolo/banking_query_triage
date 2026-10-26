@@ -5,7 +5,12 @@
 - [Notebook](notebooks/experiments.ipynb): concrete component composition, saved results, losses and example predictions.
 - **[All results: CSV](artifacts/cv_experiments/results.csv)** · [Detailed record](artifacts/cv_experiments/results.json).
 - [Report](docs/experiment_report.md): seven fixed candidates; selected TF-IDF/SVM test accuracy **89.42%**.
+- [SVM / OpenAI / Qwen comparison notebook](notebooks/model_comparison.ipynb): matched train/test pilot, confidence diagnostics and batch timings.
+- [Call flows and prompts](docs/call_flows.md) · [Local LLMs, Ollama, LangChain, tools and MCP](docs/local_llms.md).
 - [Repository guide](docs/repository_guide.md) · [Decisions](docs/architecture_decisions.md) · [Agent instructions](AGENTS.md).
+
+**[Start the local system step by step](docs/api_usage.md#start-the-local-system):**
+which services to run, terminal commands, OpenAI key setup, Qwen startup and shutdown.
 
 ```bash
 uv sync
@@ -30,8 +35,12 @@ OpenAI defaults to `gpt-6-luna`, using an explicitly marked SVM mock without
 `OPENAI_API_KEY`. Set the key before starting the server for real calls, or set
 `[openai].mode = "mock"` to stay offline. Local LLM serving is optional and requires
 a configured OpenAI-compatible server. `GET /models` reports configuration and
-mock status. LLM and mock results always require review; their quality has not
-been evaluated. See the [model setup instructions](docs/api_usage.md#select-the-model).
+mock status. LLM and mock results always require review. Qwen is enabled in the
+serving configuration and requires the separate local inference service; see the
+[setup instructions](docs/local_llms.md#4-current-installation-and-the-two-startup-options).
+Ollama works natively; Docker is optional. `make ollama` and `make ollama-stop`
+are fixed shortcuts for the Compose container. Stop the native server before
+starting that container on the same port.
 
 The shipped [serving bundle](artifacts/models/tfidf_svm_v1/manifest.json) preserves
 the selected model's full fitted pipeline, including vocabulary, IDF values, SVM
@@ -70,7 +79,10 @@ The experiment notebook defaults to saved results. `uv run python -m notebooks.e
 reruns all seven comparisons and overwrites their experiment outputs, independently
 of the serving bundle. Single-word features only; no parameter sweep.
 
-Deployment and measured LLM quality comparisons remain later work.
+The [three-model pilot](notebooks/model_comparison.ipynb) uses two messages per
+class from each split. `uv run python -m notebooks.model_comparison --full` resumes
+all rows using matching checkpointed predictions. The notebook reads saved results
+by default. Deployment and production validation remain later work.
 
 `src/` contains only serving code. Training, experiment contracts, candidate models
 and artifact export stay in `notebooks/`. The serving artifact uses native sklearn

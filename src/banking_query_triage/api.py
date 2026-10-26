@@ -12,7 +12,7 @@ from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 from .artifacts import load_bundle
-from .llm import BackendFailure, BackendUnavailable, LLMService
+from .llm import BackendFailure, BackendInputTooLarge, BackendUnavailable, LLMService
 from .service import Prediction, TriageService
 from .settings import Settings
 
@@ -41,6 +41,10 @@ class ModelInfo(BaseModel):
     confidence_kind: str
     mocked: bool
     available: bool
+    prompt_version: str | None
+    prompt_sha256: str | None
+    max_input_bytes: int | None
+    max_output_tokens: int | None
     max_messages: int
     max_message_length: int
 
@@ -105,6 +109,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     svm,
                     local_client,
                     settings.local_llm.max_output_tokens,
+                    max_input_bytes=settings.local_llm.context_window_tokens
+                    - settings.local_llm.max_output_tokens
+                    - 256,
                 ),
             )
             try:
@@ -248,6 +255,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             predictions = loaded.predict(payload.messages)
         except BackendUnavailable as error:
             raise HTTPException(status_code=503, detail=str(error)) from error
+        except BackendInputTooLarge as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
         except BackendFailure as error:
             raise HTTPException(status_code=502, detail=str(error)) from error
         return PredictionResponse(

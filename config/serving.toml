@@ -12,8 +12,10 @@ timeout_seconds = 30
 max_output_tokens = 4096
 
 [local_llm]
-enabled = false
+enabled = true
 model = "qwen2.5:0.5b"
 base_url = "http://127.0.0.1:11434/v1"
 timeout_seconds = 60
-max_output_tokens = 4096
+max_output_tokens = 2048
+# Must match OLLAMA_CONTEXT_LENGTH (or the equivalent setting in another server).
+context_window_tokens = 8192

@@ -1,2 +1,1 @@
-def main() -> None:
-    print("ciao banking-query-triage!")
+"""Banking intent classification, model artifacts, and local API serving."""

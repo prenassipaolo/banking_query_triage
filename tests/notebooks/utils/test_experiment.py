@@ -31,6 +31,7 @@ def test_contracts_reject_missing_implementations(contract):
         contract()
 
 
+@pytest.mark.integration
 def test_native_components_clone_fit_serialize_without_mutating_specifications(
     tmp_path,
 ):

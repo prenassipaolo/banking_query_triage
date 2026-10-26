@@ -7,20 +7,8 @@ import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, log_loss, roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 
-
-def validate_probabilities(probabilities, rows: int, classes: int) -> np.ndarray:
-    """Validate class probabilities and normalize tiny float32 row-sum drift."""
-    probabilities = np.asarray(probabilities, dtype=np.float64)
-    if probabilities.shape != (rows, classes):
-        raise ValueError("Model returned invalid probability shape")
-    totals = probabilities.sum(axis=1, keepdims=True)
-    if (
-        not np.isfinite(probabilities).all()
-        or (probabilities < 0).any()
-        or not np.allclose(totals, 1, atol=1e-6, rtol=1e-6)
-    ):
-        raise ValueError("Model returned invalid probabilities; rows must sum to one")
-    return probabilities / totals
+from banking_query_triage.inference import validate_probabilities
+from banking_query_triage.policy import ReviewPolicy as ServingReviewPolicy
 
 
 class BaseEvaluator(ABC):
@@ -110,19 +98,8 @@ class ClassificationEvaluator(BaseEvaluator):
         return metrics, probabilities
 
 
-class ReviewPolicy:
-    """Use one configured probability threshold; no threshold search is performed."""
-
-    def __init__(self, threshold: float):
-        if not 0 <= threshold <= 1:
-            raise ValueError("Review threshold must be in [0, 1]")
-        self.threshold = threshold
-
-    def actions(self, probabilities) -> np.ndarray:
-        """Return simulated route/review actions."""
-        return np.where(
-            np.asarray(probabilities).max(axis=1) >= self.threshold, "route", "review"
-        )
+class ReviewPolicy(ServingReviewPolicy):
+    """Measure the notebook review policy while sharing runtime decisions."""
 
     def evaluate(self, categories, probabilities, labels) -> dict:
         """Return coverage and accepted accuracy; zero coverage has no accepted accuracy."""

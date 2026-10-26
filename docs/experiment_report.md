@@ -70,7 +70,7 @@ BasePreprocessor → BaseFeatureExtractor → BaseMlModel
 - Abstract contracts have separate concrete implementations. Native-first model/vectorizer subclasses retain constructors, parameters, cloning, tags, fitting and prediction.
 - `StandardFit`, `CalibratedFit`, and `EarlyStoppingFit` orchestrate pipeline fitting. Raw SVM does not promise probabilities; its calibrated fitted pipeline does.
 - Compose objects directly, or resolve TOML names through the small registry. `ExperimentRunner(config, experiments=[...])` accepts explicit specifications. `ClassificationEvaluator(extra_metrics=...)` adds metric functions.
-- Every fit clones the component specification. Classes live under `notebooks/utils/`, ready for later promotion into `src/`; original EDA/helpers remain preserved.
+- Every fit clones the component specification. Training and experiment classes stay under `notebooks/utils/`; `src/` serves only the selected fitted model. Original EDA/helpers remain preserved.
 
 ## Run and review
 

@@ -1,0 +1,4 @@
+# Relative paths are resolved against this file, not the working directory.
+model_dir = "../artifacts/models/tfidf_svm_v1"
+max_messages = 32
+max_message_length = 4096

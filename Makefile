@@ -1,4 +1,9 @@
-.PHONY: lint lint-fix test
+.PHONY: lint lint-fix test api predict
+
+HOST ?= 127.0.0.1
+PORT ?= 8000
+CONFIG ?= config/serving.toml
+PAYLOAD ?= examples/predict.json
 
 lint:
 	uv run ruff check .
@@ -13,5 +18,11 @@ lint-fix:
 	uv run pydoclint src/
 
 test:
-	uv run pytest tests/unit/ tests/integration/
+	uv run pytest $(ARGS)
+
+api:
+	uv run banking-query-triage --config "$(CONFIG)" --host "$(HOST)" --port "$(PORT)"
+
+predict:
+	uv run python examples/call_api.py --url "http://$(HOST):$(PORT)/predict" --payload "$(PAYLOAD)"
 

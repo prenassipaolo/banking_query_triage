@@ -7,8 +7,9 @@ import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedGroupKFold
 
+from banking_query_triage.inference import validate_probabilities
+
 from .data import normalize_group
-from .evaluation import validate_probabilities
 from .pipeline import TextPipeline
 
 

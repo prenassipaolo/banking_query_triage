@@ -1,0 +1,408 @@
+{
+  "schema_version": 1,
+  "model_version": "tfidf_svm_v1",
+  "candidate": "tfidf_svm",
+  "labels": [
+    "Refund_not_showing_up",
+    "activate_my_card",
+    "age_limit",
+    "apple_pay_or_google_pay",
+    "atm_support",
+    "automatic_top_up",
+    "balance_not_updated_after_bank_transfer",
+    "balance_not_updated_after_cheque_or_cash_deposit",
+    "beneficiary_not_allowed",
+    "cancel_transfer",
+    "card_about_to_expire",
+    "card_acceptance",
+    "card_arrival",
+    "card_delivery_estimate",
+    "card_linking",
+    "card_not_working",
+    "card_payment_fee_charged",
+    "card_payment_not_recognised",
+    "card_payment_wrong_exchange_rate",
+    "card_swallowed",
+    "cash_withdrawal_charge",
+    "cash_withdrawal_not_recognised",
+    "change_pin",
+    "compromised_card",
+    "contactless_not_working",
+    "country_support",
+    "declined_card_payment",
+    "declined_cash_withdrawal",
+    "declined_transfer",
+    "direct_debit_payment_not_recognised",
+    "disposable_card_limits",
+    "edit_personal_details",
+    "exchange_charge",
+    "exchange_rate",
+    "exchange_via_app",
+    "extra_charge_on_statement",
+    "failed_transfer",
+    "fiat_currency_support",
+    "get_disposable_virtual_card",
+    "get_physical_card",
+    "getting_spare_card",
+    "getting_virtual_card",
+    "lost_or_stolen_card",
+    "lost_or_stolen_phone",
+    "order_physical_card",
+    "passcode_forgotten",
+    "pending_card_payment",
+    "pending_cash_withdrawal",
+    "pending_top_up",
+    "pending_transfer",
+    "pin_blocked",
+    "receiving_money",
+    "request_refund",
+    "reverted_card_payment?",
+    "supported_cards_and_currencies",
+    "terminate_account",
+    "top_up_by_bank_transfer_charge",
+    "top_up_by_card_charge",
+    "top_up_by_cash_or_cheque",
+    "top_up_failed",
+    "top_up_limits",
+    "top_up_reverted",
+    "topping_up_by_card",
+    "transaction_charged_twice",
+    "transfer_fee_charged",
+    "transfer_into_account",
+    "transfer_not_received_by_recipient",
+    "transfer_timing",
+    "unable_to_verify_identity",
+    "verify_my_identity",
+    "verify_source_of_funds",
+    "verify_top_up",
+    "virtual_card_not_working",
+    "visa_or_mastercard",
+    "why_verify_identity",
+    "wrong_amount_of_cash_received",
+    "wrong_exchange_rate_for_cash_withdrawal"
+  ],
+  "review_threshold": 0.7,
+  "model_sha256": "c421daf66525bf4bd1b50a360d24a3ebfbeb7b04013c8ac660b92fa0e9e9c013",
+  "versions": {
+    "python": "3.15.0rc1",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0"
+  },
+  "provenance": {
+    "operation": "notebook_artifact_migration_no_refit",
+    "source_model_sha256": "eeba8b9f764e874447b0d361cad3897e57ce57eda57866a3aa7bac2f4c71ffcf",
+    "source_results_sha256": "6d5e2ec5f6205912c02e4c5243ee7f5dd474cbb5c951beb2076050cc2a13a3d0",
+    "training_config": {
+      "seed": 42,
+      "folds": 5,
+      "threads": 2,
+      "train_file": "data/raw/train.csv",
+      "test_file": "data/raw/test.csv",
+      "labels_file": "data/raw/categories.json",
+      "fold_file": "data/processed/cv5_folds.csv",
+      "output_dir": "artifacts/cv_experiments",
+      "review_threshold": 0.7,
+      "preprocessing": {
+        "lowercase": true
+      },
+      "features": {
+        "common": {
+          "lowercase": false,
+          "min_df": 2,
+          "max_features": 5000
+        },
+        "counts": {},
+        "tfidf": {
+          "sublinear_tf": true
+        }
+      },
+      "fit_policies": {
+        "standard": {},
+        "calibrated": {
+          "folds": 5,
+          "seed": 42,
+          "method": "temperature"
+        },
+        "early_stopping": {
+          "folds": 5,
+          "seed": 42,
+          "patience": 10
+        }
+      },
+      "models": {
+        "dummy": {
+          "strategy": "prior"
+        },
+        "logistic_regression": {
+          "random_state": 42,
+          "C": 1.0,
+          "max_iter": 1000
+        },
+        "svm": {
+          "random_state": 42,
+          "C": 1.0,
+          "max_iter": 2000
+        },
+        "naive_bayes": {
+          "alpha": 1.0
+        },
+        "random_forest": {
+          "random_state": 42,
+          "n_jobs": 2,
+          "n_estimators": 150,
+          "max_depth": 20,
+          "min_samples_leaf": 2
+        },
+        "xgboost": {
+          "n_estimators": 80,
+          "objective": "multi:softprob",
+          "tree_method": "hist",
+          "device": "cpu",
+          "n_jobs": 2,
+          "random_state": 42,
+          "eval_metric": [
+            "merror",
+            "mlogloss"
+          ],
+          "max_depth": 3,
+          "learning_rate": 0.15,
+          "max_bin": 32
+        }
+      },
+      "experiments": [
+        {
+          "name": "dummy",
+          "features": "counts",
+          "model": "dummy",
+          "fit_policy": "standard"
+        },
+        {
+          "name": "counts_logistic",
+          "features": "counts",
+          "model": "logistic_regression",
+          "fit_policy": "standard"
+        },
+        {
+          "name": "tfidf_logistic",
+          "features": "tfidf",
+          "model": "logistic_regression",
+          "fit_policy": "standard"
+        },
+        {
+          "name": "tfidf_svm",
+          "features": "tfidf",
+          "model": "svm",
+          "fit_policy": "calibrated"
+        },
+        {
+          "name": "counts_naive_bayes",
+          "features": "counts",
+          "model": "naive_bayes",
+          "fit_policy": "standard"
+        },
+        {
+          "name": "counts_random_forest",
+          "features": "counts",
+          "model": "random_forest",
+          "fit_policy": "standard"
+        },
+        {
+          "name": "counts_xgboost",
+          "features": "counts",
+          "model": "xgboost",
+          "fit_policy": "early_stopping"
+        }
+      ]
+    },
+    "candidate": {
+      "name": "tfidf_svm",
+      "features": "tfidf",
+      "model": "svm",
+      "fit_policy": "CalibratedFit",
+      "pipeline": {
+        "preprocessor": {
+          "class": "notebooks.utils.preprocessing.BasicTextPreprocessor",
+          "parameters": {
+            "lowercase": true
+          }
+        },
+        "features": {
+          "class": "notebooks.utils.features.TfidfFeatures",
+          "parameters": {
+            "analyzer": "word",
+            "binary": false,
+            "decode_error": "strict",
+            "dtype": {
+              "python": "numpy.float64"
+            },
+            "encoding": "utf-8",
+            "input": "content",
+            "lowercase": false,
+            "max_df": 1.0,
+            "max_features": 5000,
+            "min_df": 2,
+            "ngram_range": [
+              1,
+              1
+            ],
+            "norm": "l2",
+            "preprocessor": null,
+            "smooth_idf": true,
+            "stop_words": null,
+            "strip_accents": null,
+            "sublinear_tf": true,
+            "token_pattern": "(?u)\\b\\w\\w+\\b",
+            "tokenizer": null,
+            "use_idf": true,
+            "vocabulary": null
+          }
+        },
+        "model": {
+          "class": "notebooks.utils.models.LinearSvmModel",
+          "parameters": {
+            "C": 1.0,
+            "class_weight": null,
+            "dual": "auto",
+            "fit_intercept": true,
+            "intercept_scaling": 1,
+            "loss": "squared_hinge",
+            "max_iter": 2000,
+            "multi_class": "ovr",
+            "penalty": "l2",
+            "random_state": 42,
+            "tol": 0.0001,
+            "verbose": 0
+          }
+        }
+      },
+      "fitting": {
+        "class": "notebooks.utils.fitting.CalibratedFit",
+        "settings": {
+          "folds": 5,
+          "seed": 42,
+          "method": "temperature"
+        }
+      },
+      "evaluation": {
+        "class": "notebooks.utils.evaluation.ClassificationEvaluator",
+        "settings": {
+          "labels": [
+            "Refund_not_showing_up",
+            "activate_my_card",
+            "age_limit",
+            "apple_pay_or_google_pay",
+            "atm_support",
+            "automatic_top_up",
+            "balance_not_updated_after_bank_transfer",
+            "balance_not_updated_after_cheque_or_cash_deposit",
+            "beneficiary_not_allowed",
+            "cancel_transfer",
+            "card_about_to_expire",
+            "card_acceptance",
+            "card_arrival",
+            "card_delivery_estimate",
+            "card_linking",
+            "card_not_working",
+            "card_payment_fee_charged",
+            "card_payment_not_recognised",
+            "card_payment_wrong_exchange_rate",
+            "card_swallowed",
+            "cash_withdrawal_charge",
+            "cash_withdrawal_not_recognised",
+            "change_pin",
+            "compromised_card",
+            "contactless_not_working",
+            "country_support",
+            "declined_card_payment",
+            "declined_cash_withdrawal",
+            "declined_transfer",
+            "direct_debit_payment_not_recognised",
+            "disposable_card_limits",
+            "edit_personal_details",
+            "exchange_charge",
+            "exchange_rate",
+            "exchange_via_app",
+            "extra_charge_on_statement",
+            "failed_transfer",
+            "fiat_currency_support",
+            "get_disposable_virtual_card",
+            "get_physical_card",
+            "getting_spare_card",
+            "getting_virtual_card",
+            "lost_or_stolen_card",
+            "lost_or_stolen_phone",
+            "order_physical_card",
+            "passcode_forgotten",
+            "pending_card_payment",
+            "pending_cash_withdrawal",
+            "pending_top_up",
+            "pending_transfer",
+            "pin_blocked",
+            "receiving_money",
+            "request_refund",
+            "reverted_card_payment?",
+            "supported_cards_and_currencies",
+            "terminate_account",
+            "top_up_by_bank_transfer_charge",
+            "top_up_by_card_charge",
+            "top_up_by_cash_or_cheque",
+            "top_up_failed",
+            "top_up_limits",
+            "top_up_reverted",
+            "topping_up_by_card",
+            "transaction_charged_twice",
+            "transfer_fee_charged",
+            "transfer_into_account",
+            "transfer_not_received_by_recipient",
+            "transfer_timing",
+            "unable_to_verify_identity",
+            "verify_my_identity",
+            "verify_source_of_funds",
+            "verify_top_up",
+            "virtual_card_not_working",
+            "visa_or_mastercard",
+            "why_verify_identity",
+            "wrong_amount_of_cash_received",
+            "wrong_exchange_rate_for_cash_withdrawal"
+          ],
+          "extra_metrics": {}
+        }
+      }
+    },
+    "training_rows": 10003,
+    "fingerprints": {
+      "train_file": "b06e26ac675513959a63135f11b94ea7786ed02da65db93a5650d8838cbc664b",
+      "test_file": "d12d6e3bc4c3103966ae786dc435913c0c563dfa328f5a3646d0e62cfeeb474d",
+      "labels_file": "53261da888122daf2d120d925458631d9619e15d82e56052e7a42e535ce32b63",
+      "folds": "39ddf127f1cf62cf1e4627fae7315f9cffd64cf27251c95605dbdbcf3691d709"
+    },
+    "training_versions": {
+      "python": "3.15.0rc1",
+      "sklearn": "1.9.1",
+      "xgboost": "3.4.1",
+      "numpy": "2.5.4",
+      "pandas": "3.1.0",
+      "joblib": "1.6.0"
+    },
+    "training_source_sha256": {
+      "notebooks/utils/artifacts.py": "5c7970c03ee633ad24854e7b6050d0fe54e36ac139c3f7781e471fa3c634066d",
+      "notebooks/utils/configuration.py": "0d45ed0835ebe22ffcc40a9b340dc3e9abf96361dbefdbf81d53f33548049367",
+      "notebooks/utils/confirmation.py": "a4201b191945217248bd630bb592cca8316b32752facb4697537955580f0ecb3",
+      "notebooks/utils/data.py": "0d0a3e7b03da9ed30e0267eb46211ebdf331e3525e6ee6a09d680426c0f6689b",
+      "notebooks/utils/evaluation.py": "cd6107cf1e26ccf7418d3bab11d6b0bf27a4ebd2333c3d7e377ca47354191262",
+      "notebooks/utils/experiment.py": "6ea198fd887ff94ff0ea794f1ee63c044c14e62fc3b14f0bfa047ef552d88603",
+      "notebooks/utils/features.py": "de04aa51883dff7f4dc62e9b205e55dcbc9e53928095cc0612095e0644460f9e",
+      "notebooks/utils/fitting.py": "b78a5bd3c3c8fe7e5c712380cb62795df939b31d8ab86a7f1c341d0615532128",
+      "notebooks/utils/models.py": "00a14cf02edea68bc11d93cd9178503050627ea49241c2bf945946aaeb866deb",
+      "notebooks/utils/pipeline.py": "3dd9ef79d3b4cb20b7d5748b7698a31e36c374815a457f8bed9cee2157118727",
+      "notebooks/utils/preprocessing.py": "5dc2fd86d94f1b51c94949053f100d2c715bcec802e7e803f4247fcf0ac59812",
+      "notebooks/utils/results.py": "ae292a083a04fbefaf3be4ebf9a59af993e3fd16ab97d15b12b0c66efc1f2cc8",
+      "notebooks/utils/utils.py": "87b1bd8a54cd53db1b27a4048e89c5da054e2ff0816df765acdaff64388e6638",
+      "notebooks/utils/validation.py": "5715a81ef97708a9071c32f1514f5c54ebb9978b4b4434689bbc2a4cea2d0d16",
+      "notebooks/utils/workflow.py": "ce222b5d66c74bc2d84466a2ead5ac1d9fce51875e0a3adb1318deb11ee5c908",
+      "notebooks/utils/xgboost_training.py": "5e8eeff55bcdee205e7bc6050240119496a2c5fc9b276a1a8201e711bcafd186"
+    }
+  }
+}

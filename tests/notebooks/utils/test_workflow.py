@@ -7,6 +7,7 @@ from copy import deepcopy
 import joblib
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.feature_extraction.text import (
     CountVectorizer,
     HashingVectorizer,
@@ -18,6 +19,8 @@ from notebooks.utils.configuration import resolve_experiments
 from notebooks.utils.data import ROOT, ExperimentData, normalize_group
 from notebooks.utils.features import BaseFeatureExtractor
 from notebooks.utils.workflow import ExperimentRunner
+
+pytestmark = pytest.mark.integration
 
 
 class HashFeatures(HashingVectorizer, BaseFeatureExtractor):
@@ -149,6 +152,9 @@ def test_full_workflow_selects_before_test_and_refits_full_data(monkeypatch, tmp
     assert results.summary().iloc[0]["test_accuracy"] == 1
     assert results.summary().iloc[0]["test_accuracy_std"] is None
     assert results.data["state"] == "complete"
+    assert "src/banking_query_triage/preprocessing.py" in results.data["source_sha256"]
+    assert "src/banking_query_triage/inference.py" in results.data["source_sha256"]
+    assert "notebooks/utils/workflow.py" in results.data["source_sha256"]
 
 
 def test_direct_components_record_actual_settings_and_accept_features_without_vocabulary(

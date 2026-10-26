@@ -1,3 +1,4 @@
+root_dir = ".." # Relative to this configuration file; used by selected-model training.
 seed = 42
 folds = 5
 threads = 2

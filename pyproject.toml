@@ -1,22 +1,23 @@
 [project]
 name = "banking-query-triage"
 version = "0.1.0"
-description = "Add your description here"
+description = "Local banking intent classification and confidence-based triage API"
 readme = "README.md"
 authors = [
     { name = "prenassipaolo", email = "prenassipaolo@gmail.com" }
 ]
 requires-python = ">=3.15"
 dependencies = [
+    "fastapi>=0.162.0",
     "joblib>=1.6.0",
     "numpy>=2.5.4",
-    "pandas>=3.1.0",
+    "pydantic>=2.14.1",
     "scikit-learn>=1.9.1",
-    "xgboost-cpu>=3.4.1",
+    "uvicorn>=0.54.0",
 ]
 
 [project.scripts]
-banking-query-triage = "banking_query_triage:main"
+banking-query-triage = "banking_query_triage.api:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
@@ -24,12 +25,16 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "httpx2>=2.16.0",
     "ipykernel>=7.4.0",
     "matplotlib>=3.11.2",
+    "pandas>=3.1.0",
     "pydoclint>=0.11.1",
     "pyright>=1.1.414",
     "pytest>=9.1.1",
     "ruff>=0.17.2",
+    "threadpoolctl>=3.7.0",
+    "xgboost-cpu>=3.4.1",
 ]
 
 [tool.pyright]
@@ -40,6 +45,11 @@ typeCheckingMode = "standard"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib --strict-markers"
+markers = [
+    "integration: exercises multiple components, persisted artifacts, or HTTP",
+]
 
 [tool.pydoclint]
 style = "google"

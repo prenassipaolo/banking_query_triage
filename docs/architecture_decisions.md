@@ -8,6 +8,7 @@
 | 22 variants with character/phrase features and C refinements | Earlier selected model achieved 90.06% test accuracy. User prioritizes explanation and technique breadth; keep seven fixed comparisons and single words. This is not a claim of improved accuracy. |
 | Normalized per-class sigmoid SVM calibration | Replaced by learned multiclass temperature/softmax calibration. Simpler probability interpretation; no controlled superiority claim. |
 | Option-heavy feature/model/pipeline factories and model-name fitting branches | Replaced by abstract stage contracts, thin native estimator/vectorizer subclasses, and object composition. `StandardFit`, `CalibratedFit`, and `EarlyStoppingFit` own inner orchestration; only TOML resolution maps names to classes. Native-first inheritance passed clone, parameter, tag, fitting, and serialization checks. |
+| Promoting experiment contracts, candidate models and fitting into `src/` | This put unused training behavior in the serving package. Keep that code in notebooks; export the selected fitted state into native sklearn components for a smaller runtime. Conversion preserves exact benchmark predictions and probabilities without retraining. |
 | Separate metric JSON files, obsolete model/prediction bundles and 80/20 assignments | Current run has one detailed JSON and one CSV summary. Removed obsolete bulky files; kept compact historical evidence below. |
 | `make experiments` alias | Direct module command is sufficient; keep Makefile for checks/tests. |
 

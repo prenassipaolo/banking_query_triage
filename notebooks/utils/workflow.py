@@ -101,7 +101,11 @@ class ExperimentRunner:
             "fingerprints": self.data.fingerprints,
             "source_sha256": {
                 p.relative_to(ROOT).as_posix(): fingerprint(p)
-                for p in sorted(Path(__file__).parent.rglob("*.py"))
+                for directory in (
+                    Path(__file__).parent,
+                    ROOT / "src/banking_query_triage",
+                )
+                for p in sorted(directory.rglob("*.py"))
             },
             "versions": {
                 "python": platform.python_version(),

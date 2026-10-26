@@ -1,11 +1,10 @@
 """Single-word features and the training vocabulary boundary."""
 
-import tomllib
-
 import pytest
 
-from notebooks.utils.configuration import resolve_experiments
-from notebooks.utils.data import ROOT
+from notebooks.utils.features import TfidfFeatures
+from notebooks.utils.models import LogisticRegressionModel
+from notebooks.utils.pipeline import TextPipeline
 from notebooks.utils.preprocessing import BasicTextPreprocessor
 
 
@@ -19,8 +18,11 @@ def test_preprocessing_preserves_negation_and_rejects_empty_messages():
 
 
 def test_single_word_vocabulary_only_learns_training_input():
-    config = tomllib.loads((ROOT / "config/experiments.toml").read_text())
-    pipeline = resolve_experiments(config, ["a", "b"])[2].pipeline.build()
+    pipeline = TextPipeline(
+        BasicTextPreprocessor(),
+        TfidfFeatures(ngram_range=(1, 1)),
+        LogisticRegressionModel(),
+    ).build()
     pipeline.fit(["card bill", "card cost", "cash bill", "cash cost"], [0, 0, 1, 1])
     features = pipeline.named_steps["features"]
     vocabulary = dict(features.vocabulary_)

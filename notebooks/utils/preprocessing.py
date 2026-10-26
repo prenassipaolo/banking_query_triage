@@ -1,11 +1,11 @@
 """Raw-text cleaning contract and conservative implementation."""
 
-import re
-import unicodedata
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
 from sklearn.base import BaseEstimator, TransformerMixin
+
+from banking_query_triage.preprocessing import clean_messages
 
 
 class BasePreprocessor(TransformerMixin, BaseEstimator, ABC):
@@ -32,10 +32,4 @@ class BasicTextPreprocessor(BasePreprocessor):
 
     def transform(self, texts: Iterable[str]) -> list[str]:
         """Clean nonempty strings, optionally lowercasing them."""
-        cleaned = []
-        for text in texts:
-            if not isinstance(text, str) or not text.strip():
-                raise ValueError("Messages must be nonempty strings")
-            text = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", text)).strip()
-            cleaned.append(text.lower() if self.lowercase else text)
-        return cleaned
+        return clean_messages(texts, lowercase=self.lowercase)

@@ -31,12 +31,16 @@ for learning. The user can override these defaults in conversation.
   configuration boundary and fitting orchestration separate from estimators.
 - Reuse native estimator constructors, parameters, cloning, and fit/predict through
   thin native-first inheritance where practical; avoid parallel wrapper frameworks.
-- Experiment in `notebooks/`; promote selected reusable behavior into `src/`.
+- Experiment in `notebooks/`; promote only selected inference behavior into `src/`.
+- Keep `src/` focused on serving the already-trained model. Training, fitting
+  policies, candidate models, selection and artifact export belong in `notebooks/`.
 - Keep experiment entry points short; put cohesive helpers in `notebooks/utils/`.
   Split files by responsibility as they grow; use classes only for useful state
   or interfaces, not merely to divide a long script.
 - Keep adjustable settings in `config/`; preserve `data/raw/`.
-- Add tests under `tests/unit/` and `tests/integration/` as implementation grows.
+- Mirror source ownership under `tests/`, such as `tests/notebooks/utils/` and
+  `tests/src/banking_query_triage/`. Use pytest markers to select integration tests
+  and parametrize to cover input cases; do not divide directories by test scope.
 - Docker is available for API runs, integration tests, isolation, and volumes.
   Use it where helpful; keep the first notebook baseline runnable locally.
 - Reuse existing containers/volumes where appropriate; avoid unnecessary copies.

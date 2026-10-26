@@ -14,6 +14,7 @@
 | `src/banking_query_triage/api.py` | HTTP request validation, endpoints, startup and server CLI |
 | `notebooks/train_selected.py`, `export_model.py` | Offline selected-model refitting and artifact migration |
 | `config/serving.toml`, `examples/` | Local serving limits and a reusable JSON request/client |
+| `docs/api_usage.md` | Local run commands, copyable Postman/Bruno payloads and Swagger instructions |
 | `notebooks/utils/serving.py` | Offline conversion to native fitted sklearn components and versioned export |
 | `notebooks/utils/preprocessing.py`, `features.py`, `models.py`, `pipeline.py`, `fitting.py` | Experiment contracts, candidate models, composition and fitting policies |
 | `notebooks/utils/experiment.py`, `xgboost_training.py` | Experiment specifications and training-only XGBoost stopping |

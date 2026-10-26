@@ -19,24 +19,10 @@ make predict
 # Optional: make predict PAYLOAD=examples/predict.json PORT=8000
 ```
 
-Open [interactive API docs](http://127.0.0.1:8000/docs), or use Postman/Bruno:
-
-- Method: `POST`; URL: `http://127.0.0.1:8000/predict`.
-- Header: `Content-Type: application/json`.
-- Body: the contents of [examples/predict.json](examples/predict.json).
-- Response: `model_version` and ordered `predictions`, each with `category`,
-  `confidence` and a simulated `route`/`review` action.
-
-`GET /health`, `/ready` and `/model` expose health, readiness and model metadata.
-The server loads the fitted model once at startup; prediction requests never train it.
-The review threshold is the existing demonstration value of **0.7**, without an
-accepted-accuracy guarantee or an out-of-domain detector.
-
-[Serving configuration](config/serving.toml) sets the model directory and request
-limits: 32 messages, 4,096 characters each. Invalid inputs return HTTP 422.
-`make api PORT=8001 CONFIG=path/to/serving.toml` selects another port/configuration.
-Artifact paths are relative to the TOML file. Outside the repository, use
-`banking-query-triage --config /absolute/path/serving.toml` or set `BQT_CONFIG`.
+See the **[API usage guide](docs/api_usage.md)** for copy-and-paste Postman/Bruno
+payloads, curl commands, response fields, configuration and troubleshooting.
+Open [Swagger UI](http://127.0.0.1:8000/docs) to send requests from your browser.
+The server must be running for local documentation links to work.
 
 The shipped [serving bundle](artifacts/models/tfidf_svm_v1/manifest.json) preserves
 the selected model's full fitted pipeline, including vocabulary, IDF values, SVM

@@ -16,8 +16,10 @@ from .settings import Settings
 class PredictionResponse(BaseModel):
     """Ordered predictions tagged with the loaded model version."""
 
-    model_version: str
-    predictions: list[Prediction]
+    model_version: str = Field(description="Identifier of the loaded model artifact.")
+    predictions: list[Prediction] = Field(
+        description="One result per input message, in input order."
+    )
 
 
 class ModelInfo(BaseModel):
@@ -52,12 +54,53 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         finally:
             service = None
 
-    app = FastAPI(title="Banking query triage", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(
+        title="Banking query triage",
+        version="0.1.0",
+        description=(
+            "Classify banking queries using the already-trained model. "
+            "Expand **POST /predict**, click **Try it out**, then **Execute** to send "
+            "the example JSON request. Results follow input order.\n\n"
+            f"Accepts **1–{settings.max_messages} messages** per request, with at most "
+            f"**{settings.max_message_length} characters** per message. "
+            "Messages must be nonblank strings.\n\n"
+            "Each result includes a category, its probability and a simulated "
+            "`route` or `review` decision. No message is forwarded and no review task "
+            "is created. Check **GET /model** for the actual review threshold and "
+            "category list. Prediction requests never train the model."
+        ),
+        openapi_tags=[
+            {
+                "name": "Predictions",
+                "description": "Send banking queries for classification.",
+            },
+            {
+                "name": "Model",
+                "description": "Inspect the loaded model and request limits.",
+            },
+            {
+                "name": "Health",
+                "description": "Check application health and model readiness.",
+            },
+        ],
+        lifespan=lifespan,
+    )
 
     class PredictionRequest(BaseModel):
         """A bounded batch of banking queries."""
 
-        model_config = ConfigDict(extra="forbid")
+        model_config = ConfigDict(
+            extra="forbid",
+            json_schema_extra={
+                "examples": [
+                    {
+                        "messages": [
+                            "My card has not arrived yet"[: settings.max_message_length]
+                        ]
+                    }
+                ]
+            },
+        )
         messages: list[
             Annotated[
                 str,
@@ -65,7 +108,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     strict=True, min_length=1, max_length=settings.max_message_length
                 ),
             ]
-        ] = Field(min_length=1, max_length=settings.max_messages, strict=True)
+        ] = Field(
+            min_length=1,
+            max_length=settings.max_messages,
+            strict=True,
+            description="Banking queries to classify. Use a JSON list even for one query.",
+        )
 
         @field_validator("messages")
         @classmethod
@@ -79,20 +127,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(status_code=503, detail="Model is not ready")
         return service
 
-    @app.get("/health")
+    @app.get("/health", tags=["Health"], summary="Check application health")
     def health() -> dict[str, Literal["ok"]]:
+        """Return `ok` when the application responds."""
         return {"status": "ok"}
 
-    @app.get("/ready")
+    @app.get("/ready", tags=["Health"], summary="Check model readiness")
     def ready() -> dict[str, str]:
+        """Return the loaded model version, or HTTP 503 when no model is ready."""
         loaded = get_service()
         return {
             "status": "ready",
             "model_version": loaded.bundle.manifest.model_version,
         }
 
-    @app.get("/model")
+    @app.get("/model", tags=["Model"], summary="Inspect the loaded model")
     def model_info() -> ModelInfo:
+        """List allowed categories, the review threshold and configured request limits."""
         manifest = get_service().bundle.manifest
         return ModelInfo(
             model_version=manifest.model_version,
@@ -103,8 +154,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             max_message_length=settings.max_message_length,
         )
 
-    @app.post("/predict")
+    @app.post("/predict", tags=["Predictions"], summary="Classify banking queries")
     def predict(payload: PredictionRequest) -> PredictionResponse:
+        """Return one category, confidence and route/review decision per message.
+
+        `confidence` is the probability of the predicted category. `route` means it
+        meets the loaded model's threshold, including equality; otherwise the
+        action is `review`. Decisions are simulated and do not guarantee correctness.
+
+        HTTP 422 indicates an invalid body: missing messages, blank/non-string
+        messages, excessive lengths/counts or extra fields.
+        """
         loaded = get_service()
         return PredictionResponse(
             model_version=loaded.bundle.manifest.model_version,

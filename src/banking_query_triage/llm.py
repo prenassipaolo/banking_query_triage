@@ -50,7 +50,7 @@ def prompt_fingerprint(labels: list[str]) -> str:
 def openai_request(
     labels: list[str], messages: list[str], model: str, max_output_tokens: int
 ) -> dict:
-    """Build one Responses request for both synchronous and asynchronous Batch use."""
+    """Build one synchronous Responses request containing the supplied message batch."""
     return {
         "model": model,
         "instructions": classification_prompt(labels),

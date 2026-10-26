@@ -28,7 +28,7 @@ flowchart LR
 ```
 
 The API and Ollama are separate programs. `make api` starts the banking API only.
-Ollama can run natively or in Docker; choose one. Jupyter, training, LangChain and
+Ollama runs natively in this setup; Docker is unnecessary. Jupyter, training, LangChain and
 MCP are not required to serve predictions.
 
 ### 1. Prepare the project
@@ -57,9 +57,9 @@ configured with the required **8,192-token context** and the intended model cach
 the version endpoint does not verify either setting. If those settings are unknown,
 stop the existing service using its own lifecycle instructions and start it with
 the configuration below. A connection-refused error means you need to start it.
-Choose **A or B**, with only one server on port 11434:
+Start the native service below, with only one server on port 11434:
 
-**A. Native Ollama — verified working on this machine.** In terminal A, run:
+**Native Ollama — verified working on this machine.** In terminal A, run:
 
 ```bash
 env OLLAMA_HOST=127.0.0.1:11434 \
@@ -74,19 +74,8 @@ env OLLAMA_HOST=127.0.0.1:11434 \
 
 Keep terminal A open. This project-local binary and its cache were installed on
 this machine; they are excluded from Git. If the binary is absent, follow the
-[native installation instructions](local_llms.md#4-current-installation-and-the-two-startup-options)
+[native installation instructions](local_llms.md#4-native-ollama-installation)
 first. A system-installed `ollama` can replace `.cache/ollama/bin/ollama` above.
-
-**B. Docker Ollama — optional.** With Docker running and native Ollama stopped:
-
-```bash
-make ollama
-docker compose ps
-```
-
-This starts a detached container. It does not start the banking API. This host
-previously failed to extract the official image; if that happens again, use the
-native option. See the [runtime guide](local_llms.md#docker-alternative) for details.
 
 In another terminal, verify the model is downloaded:
 
@@ -94,18 +83,14 @@ In another terminal, verify the model is downloaded:
 curl --fail http://127.0.0.1:11434/api/tags
 ```
 
-Look for `qwen2.5:0.5b`. If it is missing, run the command matching your choice:
+Look for `qwen2.5:0.5b`. If it is missing, download it with the native CLI:
 
 ```bash
-# Native:
 .cache/ollama/bin/ollama pull qwen2.5:0.5b
-# Docker alternative:
-docker compose exec ollama ollama pull qwen2.5:0.5b
 ```
 
-The configured Qwen model has already been downloaded on this machine. When launched
-with the commands above, the native and Compose options share `.cache/ollama/models`;
-repeated downloads are unnecessary.
+The configured Qwen model has already been downloaded on this machine. The native installation uses
+`.cache/ollama/models`; repeated downloads are unnecessary.
 `[local_llm].enabled` is already true in [serving.toml](../config/serving.toml).
 Keep its `context_window_tokens` aligned with Ollama's 8,192-token context.
 
@@ -180,7 +165,6 @@ The request client/browser does not need the OpenAI key; the server holds it.
 | Banking API | Ctrl+C in terminal B | Export the key if using OpenAI, then `make api` |
 | Foreground native Ollama | Ctrl+C in terminal A | Native command from step 2 |
 | Detached native Ollama | Follow the [PID/process instructions](local_llms.md#native-process-use-the-installed-project-local-binary) | Native command from step 2 |
-| Docker Ollama | `make ollama-stop` | `make ollama` |
 
 `ollama stop qwen2.5:0.5b` only unloads the model; it does not shut down Ollama.
 Stopping these services preserves downloaded weights and the fitted SVM artifact.
@@ -277,7 +261,7 @@ the budget, prompts and batching; the [comparison notebook](../notebooks/model_c
 contains the measured train/test pilot.
 
 One request can contain several messages, making one provider call for the list.
-See [grouped calls and the optional OpenAI Batch workflow](call_flows.md#multiple-messages-and-batching)
+See [grouped synchronous calls](call_flows.md#multiple-messages-and-batching)
 for processing a dataset without one request per message.
 
 ## Understand the response
@@ -400,7 +384,7 @@ options; they do not need another configuration file for occasional overrides.
 | --- | --- |
 | Connection refused | Start `make api`, wait for startup to complete, and check the port |
 | OpenAI response says `mocked: true` | Export the key in the API terminal before startup and restart; use `[openai].mode = "live"` to fail clearly when the key is missing |
-| Native Ollama command is missing | The ignored project-local binary is not part of a fresh clone; follow the linked native installation guide or choose Docker |
+| Native Ollama command is missing | The ignored project-local binary is not part of a fresh clone; follow the linked native installation guide |
 | HTTP 422 | Check JSON syntax, the `messages` list, nonblank strings and request limits; response `detail` identifies validation errors |
 | HTTP 503 | The model is not ready, local LLM is disabled, or live OpenAI has no key; inspect `/models` and configuration |
 | HTTP 502 | Provider failed, timed out, refused or returned invalid/truncated output; check the provider and configured token limit |

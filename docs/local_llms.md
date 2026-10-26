@@ -45,7 +45,7 @@ That is an artifact size, not a RAM reservation or an accuracy result.
 | vLLM | Inference/serving engine aimed at throughput, scheduling and efficient accelerator use | Yes | Production option to evaluate |
 | `openai` Python SDK | HTTP client and API types; can target compatible local endpoints | No | Client for OpenAI and Ollama |
 | FastAPI / Uvicorn | Application HTTP interface and server: validation, routing and policy | Calls a backend | Banking API |
-| Docker / Compose | Package and manage processes, filesystems, networking and volumes | Does not itself accelerate inference | Optional Ollama startup path |
+| Docker / Compose | Package and manage processes, filesystems, networking and volumes | Does not itself accelerate inference | General packaging option; project startup removed |
 | LangChain | Model/tool integrations and application/agent composition | Calls a model runtime/provider | Not required or installed here |
 | LangGraph | Stateful workflow/agent orchestration, including durable execution patterns | Calls model/tool components | Not required here |
 | LangSmith | Tracing/evaluation product associated with the LangChain ecosystem | Observes application behavior | Optional; check data handling before adoption |
@@ -131,7 +131,7 @@ the operational complexity.
 [llama.cpp](https://github.com/ggml-org/llama.cpp),
 [vLLM](https://docs.vllm.ai/en/latest/index.html)
 
-## 4. Current installation and the two startup options
+## 4. Native Ollama installation
 
 **This session uses native Ollama 0.40.11, not a running Docker container.** The
 Docker image transfer repeatedly failed. A checksum-verified official native archive
@@ -142,7 +142,8 @@ The service listens on `127.0.0.1:11434`, with cloud features disabled. This ses
 leaves a detached native process, with its PID in `.cache/ollama/server.pid` and
 logs in `.cache/ollama/server.log`. It is not an installed system service and does
 not start automatically after a reboot. `docker ps` does not show native processes.
-The Compose alternative is optional; Ollama does not require Docker.
+Ollama does not require Docker. The failed project Docker startup path was removed;
+[retry notes](architecture_decisions.md#ollama-docker-startup) preserve its evidence.
 
 ### Native process: use the installed project-local binary
 
@@ -182,39 +183,6 @@ may provide an `ollama` command and a managed service; then replace the project-
 binary path above with `ollama` and configure its service environment. Do not run a
 second manual server if the system service already owns port 11434.
 
-### Docker alternative
-
-After stopping the native service, run:
-
-```bash
-docker compose up -d ollama
-# Or the fixed Make shortcut:
-make ollama
-# Only needed when the shared cache does not already contain this model:
-docker compose exec ollama ollama pull qwen2.5:0.5b
-docker compose ps
-docker compose logs --tail 50 ollama
-docker compose exec ollama ollama ps
-```
-
-[`compose.yaml`](../compose.yaml) pins a runtime release, binds only localhost,
-bind-mounts the existing `.cache/ollama/models` directory, limits the container to four CPUs/1.5 GiB, and allows one
-loaded model and one concurrent inference. Those limits target this small pilot;
-they are not appropriate defaults for larger models. Downloading is explicit:
-`up` starts the runtime but does not pull Qwen automatically.
-
-`make ollama-stop` (or `docker compose stop ollama`) stops the container and preserves
-the host's cached weights. It does not stop native Ollama. The two startup options
-share the downloaded weights; use one server at a time. On shared hosts, provision
-cache ownership for the chosen native/container users. Docker packages the service;
-GPU support requires additional host/runtime configuration. Container CPU limits
-differ from this pilot's native runtime, so container latency needs its own measurement.
-
-The Docker path was not successfully started in this session: the host's containerd
-process crashed while extracting the official image. The Make shortcut and Compose
-configuration are provided, but native Ollama is the verified working path.
-[Official Docker instructions](https://docs.ollama.com/docker)
-
 ## 5. Use Ollama for tasks outside banking
 
 The server is reusable. The banking prompt is supplied by our Python service on
@@ -224,10 +192,7 @@ call the same runtime with its own messages, system instructions and model tag.
 ### Interactive CLI
 
 ```bash
-# Native installation used in this session:
 .cache/ollama/bin/ollama run qwen2.5:0.5b
-# If using the Compose alternative:
-docker compose exec ollama ollama run qwen2.5:0.5b
 ```
 
 Ask a normal question at the prompt; `/bye` ends the CLI conversation without
@@ -292,8 +257,8 @@ can slow banking calls, and a one-model limit can cause eviction/reloading.
 For other computers, localhost refers to **that computer**. Do not expose the
 unauthenticated Ollama port to a company network as a shortcut; use an authenticated
 gateway or a private service design. Inside a container, localhost refers to that
-container, not the host or a sibling container. In Compose, sibling services can
-use `http://ollama:11434/v1` on their private network.
+container, not the host or a sibling container. In a custom container deployment, a private inference service might be named
+`ollama` and use `http://ollama:11434/v1`; this repository no longer supplies that setup.
 
 ## 6. Prompts, templates and constrained output
 

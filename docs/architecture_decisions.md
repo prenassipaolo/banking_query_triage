@@ -16,3 +16,56 @@
 Historical evidence: [previous comparison](../artifacts/previous_holdout.csv) and [metadata/CV/confirmation](../artifacts/previous_holdout_metadata.json). These belong to the superseded protocol, not the current model selection.
 
 Raw data, original EDA, and its helper file remain. Current [results](experiment_report.md) use the new protocol.
+
+## Removed integrations
+
+### Ollama Docker startup
+
+The official `ollama/ollama:0.40.11` image repeatedly failed during layer extraction
+on this host. containerd restarted after a runtime heap-pointer error; disk space
+was available. This was a host container-runtime failure, not an Ollama requirement
+or evidence that Ollama cannot run in Docker. Native Ollama successfully ran Qwen
+and remains supported, including the experimental banking backend.
+
+Removed the unverified Compose file and `make ollama`/`make ollama-stop` shortcuts.
+The attempted configuration remains in commit `fa5583f` for inspection:
+
+```bash
+git show fa5583f:compose.yaml
+```
+
+Before restoring it, verify image pull/extraction on a healthy Docker host, localhost
+binding, cache ownership, the 8,192-token context and one actual prediction. Avoid
+running native and container servers on the same port. The native pilot's timings
+do not establish container performance; the attempted container had different CPU limits.
+
+### Asynchronous OpenAI Batch
+
+The former prepare/submit/status/collect CLI had offline tests and prepared a local
+input file, but **no live asynchronous job was submitted or collected**. No actual
+provider failure was established. Removed the unverified workflow, its dedicated
+tests and unused prepared files. Grouped synchronous requests remain supported:
+several messages in one `/predict` request make one OpenAI call.
+
+The [provider Batch guide](https://developers.openai.com/api/docs/guides/batch)
+describes the asynchronous service. The removed implementation is inspectable
+without executing it:
+
+```bash
+git show fa5583f:notebooks/utils/openai_batch.py
+git show fa5583f:notebooks/openai_batch.py
+```
+
+To retry, first verify a small paid job end to end: input hash and row mapping,
+upload, saved job ID, status transitions, result/error download, unordered custom-ID
+mapping, refusal/completion checks and failure-aware scoring. Test duplicate
+submission protection and actual model/account support. Report job turnaround
+separately from online latency; keep keys out of input files and Git.
+
+### Retained local-model evidence
+
+Qwen's inference path worked after the output-cardinality fix. Its **5.19% test
+accuracy** and approximately **99.7% mean reported confidence** are limitations of
+this model/prompt combination, not a broken Ollama integration. Keep it experimental
+and review its results; the original notebook, prediction CSVs, request ledger and
+runtime record remain unchanged. Standalone Ollama and its cached weights were not removed.

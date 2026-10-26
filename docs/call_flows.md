@@ -61,7 +61,7 @@ The single source is [`src/banking_query_triage/llm.py`](../src/banking_query_tr
 | --- | --- |
 | `classification_prompt(labels)` | Zero-shot instructions shared by both LLMs |
 | `classification_schema(labels)` | Fields, types and enum of allowed categories |
-| `openai_request(...)` | Identical Responses body for synchronous and Batch calls |
+| `openai_request(...)` | Responses body for one grouped synchronous call |
 | `parse_classifications(...)` | Enforce labels and exactly-once indices; restore input order |
 
 The prompt supplies all 77 category names, treats input messages as untrusted data,
@@ -122,52 +122,13 @@ more rows affected by a malformed response. The comparison starts with eight
 messages per call for all three models. It sends groups sequentially to avoid
 mixing concurrency effects with model quality.
 
-### OpenAI Batch: submit a dataset job
+### Removed asynchronous Batch workflow
 
-The optional notebook CLI prepares many independent Responses requests in one
-JSONL file and submits that file as a single asynchronous job. Requests still have
-individual context/output limits. OpenAI documents a 50% token-price discount and
-a 24-hour completion window. It does not promise lower interactive latency.
-[Batch guide](https://developers.openai.com/api/docs/guides/batch)
-
-```mermaid
-sequenceDiagram
-    participant N as Notebook / CLI
-    participant F as OpenAI Files + Batch
-    participant W as Batch workers
-    N->>N: Select rows; group messages; write JSONL and row map
-    N->>F: Upload input file, then submit one job
-    F-->>N: Batch ID
-    F->>W: Schedule individual requests
-    N->>F: Query job status later
-    W-->>F: Unordered outputs and error file
-    N->>F: Download completed output/error files
-    N->>N: Match custom_id and message_index; validate; score
-```
-
-From a terminal with `OPENAI_API_KEY` exported:
-
-```bash
-uv run python -m notebooks.openai_batch prepare
-uv run python -m notebooks.openai_batch submit
-uv run python -m notebooks.openai_batch status
-uv run python -m notebooks.openai_batch collect
-```
-
-Add `--full` to **each** command for all rows. Preparation is offline; submission
-is the paid operation. The CLI saves upload/job IDs and refuses duplicate submissions.
-Preparation can be repeated when the inputs match. Submission and collection verify
-the prepared JSONL hash before uploading or joining row IDs; edited input is rejected.
-If creation fails after submission begins but before a job ID is saved, inspect the
-OpenAI dashboard before changing `submission_started.json`; a network failure does
-not prove the job was never created. Collection is safe to repeat and counts
-missing/failed rows. Output order is not assumed. Files contain dataset text, so
-use only data approved for the selected provider.
-
-Batch results are stored separately. They have job turnaround and token usage,
-not fabricated per-request p50/p95 latency. This task's synchronous pilot provides
-the comparable online timing evidence. Batch submission is available but is not
-automatically performed when viewing or executing the comparison notebook.
+The supported path above groups messages in one synchronous call. The separate
+prepare/submit/status/collect CLI was never exercised against a live asynchronous
+job and has been removed. No provider failure was established; the workflow was
+unverified. [Evidence and retry criteria](architecture_decisions.md#asynchronous-openai-batch)
+remain for a future end-to-end attempt. Notebook execution submits no asynchronous job.
 
 ## What the notebook measures
 

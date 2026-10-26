@@ -1,4 +1,4 @@
-.PHONY: lint lint-fix test api predict ollama ollama-stop
+.PHONY: lint lint-fix test api predict
 
 lint:
 	uv run ruff check .
@@ -20,10 +20,3 @@ api:
 
 predict:
 	uv run python examples/call_api.py
-
-ollama:
-	docker compose up -d ollama
-
-ollama-stop:
-	docker compose stop ollama
-

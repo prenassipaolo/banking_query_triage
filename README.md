@@ -37,10 +37,11 @@ OpenAI defaults to `gpt-6-luna`, using an explicitly marked SVM mock without
 a configured OpenAI-compatible server. `GET /models` reports configuration and
 mock status. LLM and mock results always require review. Qwen is enabled in the
 serving configuration and requires the separate local inference service; see the
-[setup instructions](docs/local_llms.md#4-current-installation-and-the-two-startup-options).
-Ollama works natively; Docker is optional. `make ollama` and `make ollama-stop`
-are fixed shortcuts for the Compose container. Stop the native server before
-starting that container on the same port.
+[setup instructions](docs/local_llms.md#4-native-ollama-installation).
+Ollama runs natively. The failed Docker startup path and the unverified asynchronous
+OpenAI Batch workflow were removed; [failure and retry notes](docs/architecture_decisions.md#removed-integrations)
+remain. Grouped synchronous requests are still supported. Qwen remains available
+for experiments; its pilot accuracy is too low for automatic banking routing.
 
 The shipped [serving bundle](artifacts/models/tfidf_svm_v1/manifest.json) preserves
 the selected model's full fitted pipeline, including vocabulary, IDF values, SVM

@@ -38,6 +38,8 @@ for learning. The user can override these defaults in conversation.
   Split files by responsibility as they grow; use classes only for useful state
   or interfaces, not merely to divide a long script.
 - Keep adjustable settings in `config/`; preserve `data/raw/`.
+- Keep Make targets as fixed shortcuts without argument forwarding or duplicated
+  CLI defaults. Use the underlying CLI directly for occasional overrides.
 - Mirror source ownership under `tests/`, such as `tests/notebooks/utils/` and
   `tests/src/banking_query_triage/`. Use pytest markers to select integration tests
   and parametrize to cover input cases; do not divide directories by test scope.

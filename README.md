@@ -1,6 +1,6 @@
 # Banking query triage
 
-**Goal:** classify banking queries through a locally testable API, backed by a reproducible notebook model.
+**Goal:** classify banking queries through a locally testable API with a fitted SVM, OpenAI or an optional local LLM.
 
 - [Notebook](notebooks/experiments.ipynb): concrete component composition, saved results, losses and example predictions.
 - **[All results: CSV](artifacts/cv_experiments/results.csv)** · [Detailed record](artifacts/cv_experiments/results.json).
@@ -16,13 +16,22 @@ In another terminal:
 
 ```bash
 make predict
-# Optional: make predict PAYLOAD=examples/predict.json PORT=8000
+uv run python examples/call_api.py --model openai
+# Optional: uv run python examples/call_api.py --model local_llm
 ```
 
 See the **[API usage guide](docs/api_usage.md)** for copy-and-paste Postman/Bruno
 payloads, curl commands, response fields, configuration and troubleshooting.
 Open [Swagger UI](http://127.0.0.1:8000/docs) to send requests from your browser.
 The server must be running for local documentation links to work.
+
+Requests select `model: "svm"` (default), `"openai"` or `"local_llm"`.
+OpenAI defaults to `gpt-6-luna`, using an explicitly marked SVM mock without
+`OPENAI_API_KEY`. Set the key before starting the server for real calls, or set
+`[openai].mode = "mock"` to stay offline. Local LLM serving is optional and requires
+a configured OpenAI-compatible server. `GET /models` reports configuration and
+mock status. LLM and mock results always require review; their quality has not
+been evaluated. See the [model setup instructions](docs/api_usage.md#select-the-model).
 
 The shipped [serving bundle](artifacts/models/tfidf_svm_v1/manifest.json) preserves
 the selected model's full fitted pipeline, including vocabulary, IDF values, SVM
@@ -32,12 +41,14 @@ artifacts; `uv sync --frozen` reproduces the recorded dependency environment.
 
 ```bash
 make test
-make test ARGS='-m integration'
-make test ARGS='-m "not integration"'
+uv run pytest -m integration
+uv run pytest -m "not integration"
 make lint
 ```
 
 Tests mirror `notebooks/` and `src/`; integration is a pytest marker, not a folder.
+Make targets are fixed shortcuts. Use the underlying CLI for options; `make predict`
+is a manual HTTP smoke check that prints a response, without asserting its contents.
 
 To fit the selected recipe again, explicitly create a new model version:
 
@@ -59,7 +70,7 @@ The experiment notebook defaults to saved results. `uv run python -m notebooks.e
 reruns all seven comparisons and overwrites their experiment outputs, independently
 of the serving bundle. Single-word features only; no parameter sweep.
 
-Deployment and LLM comparisons remain later work.
+Deployment and measured LLM quality comparisons remain later work.
 
 `src/` contains only serving code. Training, experiment contracts, candidate models
 and artifact export stay in `notebooks/`. The serving artifact uses native sklearn

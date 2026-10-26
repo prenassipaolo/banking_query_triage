@@ -2,3 +2,18 @@
 model_dir = "../artifacts/models/tfidf_svm_v1"
 max_messages = 32
 max_message_length = 4096
+
+[openai]
+model = "gpt-6-luna"
+# auto: live with OPENAI_API_KEY, otherwise an explicitly marked SVM mock.
+# mock: always offline. live: missing key returns 503; never falls back to mock.
+mode = "auto"
+timeout_seconds = 30
+max_output_tokens = 4096
+
+[local_llm]
+enabled = false
+model = "qwen2.5:0.5b"
+base_url = "http://127.0.0.1:11434/v1"
+timeout_seconds = 60
+max_output_tokens = 4096

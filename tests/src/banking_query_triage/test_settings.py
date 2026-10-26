@@ -25,6 +25,12 @@ def test_config_resolves_artifacts_relative_to_file(tmp_path, monkeypatch):
         {"max_message_length": -1},
         {"max_messages": True},
         {"unknown": 1},
+        {"openai": {"mode": "silent_fallback"}},
+        {"openai": {"timeout_seconds": 0}},
+        {"openai": {"max_output_tokens": True}},
+        {"openai": {"model": "   "}},
+        {"local_llm": {"enabled": "false"}},
+        {"local_llm": {"base_url": "file:///tmp/model"}},
     ],
 )
 def test_rejects_invalid_configuration(tmp_path, extra):

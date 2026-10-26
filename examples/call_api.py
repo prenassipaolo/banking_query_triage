@@ -11,11 +11,16 @@ def main() -> None:
     """Print the API response or an actionable HTTP/connection error."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", default="http://127.0.0.1:8000/predict")
+    parser.add_argument("--model", choices=["svm", "openai", "local_llm"])
+    parser.add_argument("--timeout", type=float, default=120)
     parser.add_argument(
         "--payload", type=Path, default=Path(__file__).with_name("predict.json")
     )
     args = parser.parse_args()
-    payload = json.dumps(json.loads(args.payload.read_text())).encode()
+    body = json.loads(args.payload.read_text())
+    if args.model is not None:
+        body["model"] = args.model
+    payload = json.dumps(body).encode()
     request = Request(
         args.url,
         data=payload,
@@ -23,7 +28,7 @@ def main() -> None:
         method="POST",
     )
     try:
-        with urlopen(request, timeout=30) as response:
+        with urlopen(request, timeout=args.timeout) as response:
             print(json.dumps(json.load(response), indent=2))
     except HTTPError as error:
         parser.exit(1, f"HTTP {error.code}: {error.read().decode()}\n")

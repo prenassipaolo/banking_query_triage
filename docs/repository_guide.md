@@ -10,6 +10,7 @@
 | `config/experiments.toml` | Seven candidates, native estimator settings, explicit fitting policies |
 | `src/banking_query_triage/preprocessing.py` | Stateless text cleaning used by the fitted serving pipeline |
 | `src/banking_query_triage/inference.py`, `policy.py`, `service.py` | Validated probabilities, category decoding and route/review decisions |
+| `src/banking_query_triage/llm.py` | OpenAI/local LLM inference, validated indexed outputs and explicit offline mock |
 | `src/banking_query_triage/artifacts.py`, `settings.py` | Versioned serving bundles, provenance, consistency checks and runtime configuration |
 | `src/banking_query_triage/api.py` | HTTP request validation, endpoints, startup and server CLI |
 | `notebooks/train_selected.py`, `export_model.py` | Offline selected-model refitting and artifact migration |

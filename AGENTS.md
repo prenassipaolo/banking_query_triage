@@ -6,7 +6,13 @@ for learning. The user can override these defaults in conversation.
 ## Communicate
 
 - Lead with the result; keep prose short.
-- During work, give short updates about the current action so the user can steer.
+- Before tool-backed or sustained work, send a short user-facing progress update.
+- While actively working, send an update at least every 60 seconds (aim for 30–60),
+  including analysis, tool runs, waits and reviewer work. Tool output and subagent
+  messages do not count.
+  State the current action, meaningful finding/blocker and next step; also update
+  when scope or plans change. Use bounded waits where possible and explain an
+  unavoidable long tool delay when it returns.
 - Begin completion summaries with a one-line goal, followed by the result.
 - Persist general working preferences in agent instructions for future sessions;
   distinguish repository-local instructions from user-wide preferences.

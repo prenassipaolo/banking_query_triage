@@ -20,3 +20,6 @@ patience = 5
 min_delta = 0.001
 learning_rate = 0.003
 weight_decay = 0.01
+
+mlflow_store = "artifacts/mlflow"
+mlflow_experiment = "qwen-head"

@@ -208,6 +208,9 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# Local MLflow SQLite database and artifact copies (absolute local paths).
+artifacts/mlflow/
+
 # PyPI configuration file
 .pypirc
 

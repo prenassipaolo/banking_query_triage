@@ -9,6 +9,7 @@ import pytest
 # The main serving/test environment deliberately does not depend on PyTorch.
 torch = pytest.importorskip("torch")
 pytest.importorskip("transformers")
+pytest.importorskip("mlflow")
 from notebooks.utils import qwen_head
 
 

@@ -13,6 +13,7 @@
 | `config/model_comparison.toml` | Pilot sampling, datasets, batch size and comparison API settings |
 | `notebooks/qwen_head.ipynb`, `qwen_head.py`, `utils/qwen_head.py` | Frozen Qwen features and one small CPU PyTorch head experiment; isolated dependencies in `notebooks/requirements-qwen.txt` |
 | `config/qwen_head.toml`, `artifacts/qwen_head/` | Bounded pilot settings, samples, cached features, head weights, CV metrics and loss plots |
+| `notebooks/utils/qwen_tracking.py`, `artifacts/mlflow/` | Local MLflow runs, per-epoch metrics, saved-result imports and copied artifacts; dashboard instructions in the Qwen notebook |
 | `docs/call_flows.md`, `local_llms.md` | Routing/prompt diagrams, metric interpretation, local operations and production concepts |
 | `artifacts/model_comparison/` | Pilot predictions/metrics, request evidence, figures and runtime identity |
 | `src/banking_query_triage/preprocessing.py` | Stateless text cleaning used by the fitted serving pipeline |

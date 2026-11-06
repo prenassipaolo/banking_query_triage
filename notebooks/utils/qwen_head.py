@@ -8,6 +8,7 @@ import tomllib
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import mlflow
 import numpy as np
 import pandas as pd
 import torch
@@ -16,6 +17,7 @@ from torch import nn
 from transformers import AutoModel, AutoTokenizer
 
 from .data import ROOT, ExperimentData, normalize_group
+from .qwen_tracking import log_epoch, log_summary, tracking_run
 
 
 def sample_frame(frame: pd.DataFrame, count: int, seed: int) -> pd.DataFrame:
@@ -153,6 +155,7 @@ def fit_head(
         else:
             # Evaluate test retrospectively after ALL fitting and choices are finished.
             snapshots.append(copy.deepcopy(model.state_dict()))
+        log_epoch(row)
         history.append(row)
         if validation is not None and stale >= config["patience"]:
             break
@@ -166,11 +169,18 @@ def fit_head(
 def run_experiment(config_path: Path = ROOT / "config/qwen_head.toml") -> dict:
     """Run bounded grouped CV, freeze choices, refit, then inspect held-out test."""
     config = tomllib.loads(config_path.read_text())
+    with tracking_run(config, "live-training"):
+        return _run_experiment(config)
+
+
+def _run_experiment(config: dict) -> dict:
+    """Extract cached features, select the head, then evaluate held-out data."""
     torch.set_num_threads(config["threads"])
     output = ROOT / config["output_dir"]
     output.mkdir(parents=True, exist_ok=True)
     labels = np.array(sorted(json.loads((ROOT / config["labels_file"]).read_text())))
     config["classes"] = len(labels)
+    mlflow.log_param("classes", config["classes"])
     train = sample_frame(
         ExperimentData.read_frame(ROOT / config["train_file"], labels),
         config["train_per_class"],
@@ -194,19 +204,30 @@ def run_experiment(config_path: Path = ROOT / "config/qwen_head.toml") -> dict:
     histories, results = [], []
     for hidden_size in config["hidden_sizes"]:
         for fold, (fit, validation) in enumerate(splits):
-            model, history, _, best_epoch = fit_head(
-                x, y, fit, validation, hidden_size, config
-            )
-            loss, accuracy = score(model, x[validation], y[validation])
-            results.append(
-                {
-                    "hidden_size": hidden_size,
-                    "fold": fold,
-                    "best_epoch": best_epoch,
-                    "validation_loss": loss,
-                    "validation_accuracy": accuracy,
-                }
-            )
+            with mlflow.start_run(
+                run_name=f"width-{hidden_size}-fold-{fold + 1}", nested=True
+            ):
+                mlflow.log_params({"hidden_size": hidden_size, "fold": fold + 1})
+                model, history, _, best_epoch = fit_head(
+                    x, y, fit, validation, hidden_size, config
+                )
+                loss, accuracy = score(model, x[validation], y[validation])
+                mlflow.log_metrics(
+                    {
+                        "best_epoch": best_epoch,
+                        "best_validation_loss": loss,
+                        "best_validation_accuracy": accuracy,
+                    }
+                )
+                results.append(
+                    {
+                        "hidden_size": hidden_size,
+                        "fold": fold,
+                        "best_epoch": best_epoch,
+                        "validation_loss": loss,
+                        "validation_accuracy": accuracy,
+                    }
+                )
             histories.extend(
                 dict(hidden_size=hidden_size, fold=fold, **row) for row in history
             )
@@ -218,31 +239,37 @@ def run_experiment(config_path: Path = ROOT / "config/qwen_head.toml") -> dict:
     cv = pd.DataFrame(results)
     selected = int(cv.groupby("hidden_size").validation_loss.mean().idxmin())
     epochs = max(1, int(cv.loc[cv.hidden_size.eq(selected), "best_epoch"].median()))
-    model, history, snapshots, _ = fit_head(
-        x, y, np.arange(len(y)), None, selected, config, epochs=epochs
-    )
-    # Test labels and messages enter only after architecture and duration are frozen.
-    test_raw = ExperimentData.read_frame(ROOT / config["test_file"], labels)
-    test_raw = test_raw.loc[~test_raw.text.map(normalize_group).isin(groups)]
-    test = sample_frame(test_raw, config["test_per_class"], config["seed"])
-    test.to_csv(output / "test_sample.csv", index=False)
-    xt = extract_features(test.text.tolist(), config, output)
-    yt = torch.tensor(np.searchsorted(labels, test.category), dtype=torch.long)
-    final_state = copy.deepcopy(model.state_dict())
-    for row, state in zip(history, snapshots, strict=True):
-        model.load_state_dict(state)
-        row["test_loss"], row["test_accuracy"] = score(model, xt, yt)
-    model.load_state_dict(final_state)
-    torch.save(
-        {
-            "state_dict": final_state,
-            "labels": labels.tolist(),
-            "config": config,
-            "hidden_size": selected,
-            "epochs": epochs,
-        },
-        output / "head.pt",
-    )
+    with mlflow.start_run(run_name="final-refit", nested=True):
+        mlflow.log_params({"hidden_size": selected, "epochs": epochs})
+        model, history, snapshots, _ = fit_head(
+            x, y, np.arange(len(y)), None, selected, config, epochs=epochs
+        )
+        # Test labels and messages enter only after architecture and duration are frozen.
+        test_raw = ExperimentData.read_frame(ROOT / config["test_file"], labels)
+        test_raw = test_raw.loc[~test_raw.text.map(normalize_group).isin(groups)]
+        test = sample_frame(test_raw, config["test_per_class"], config["seed"])
+        test.to_csv(output / "test_sample.csv", index=False)
+        xt = extract_features(test.text.tolist(), config, output)
+        yt = torch.tensor(np.searchsorted(labels, test.category), dtype=torch.long)
+        final_state = copy.deepcopy(model.state_dict())
+        for row, state in zip(history, snapshots, strict=True):
+            model.load_state_dict(state)
+            row["test_loss"], row["test_accuracy"] = score(model, xt, yt)
+            mlflow.log_metrics(
+                {"test_loss": row["test_loss"], "test_accuracy": row["test_accuracy"]},
+                step=row["epoch"],
+            )
+        model.load_state_dict(final_state)
+        torch.save(
+            {
+                "state_dict": final_state,
+                "labels": labels.tolist(),
+                "config": config,
+                "hidden_size": selected,
+                "epochs": epochs,
+            },
+            output / "head.pt",
+        )
     curves = pd.DataFrame(histories)
     final = pd.DataFrame(history)
     cv.to_csv(output / "cv.csv", index=False)
@@ -259,6 +286,7 @@ def run_experiment(config_path: Path = ROOT / "config/qwen_head.toml") -> dict:
     }
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     plot_losses(curves, final, selected, output)
+    log_summary(summary, output)
     return summary
 
 

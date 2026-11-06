@@ -5,6 +5,7 @@
 | Location | Responsibility |
 | --- | --- |
 | `AGENTS.md` | Working preferences and required fresh-context review |
+| `docs/starting_a_project.md` | Reusable Python project setup guide based on the initial commits |
 | `notebooks/eda.ipynb`, `notebooks/utils/utils.py` | Original user exploration/helpers; preserved |
 | `notebooks/experiments.ipynb`, `experiments.py` | Object composition and saved-result views; short CLI |
 | `config/experiments.toml` | Seven candidates, native estimator settings, explicit fitting policies |

@@ -8,6 +8,7 @@
 - [SVM / OpenAI / Qwen comparison notebook](notebooks/model_comparison.ipynb): matched train/test pilot, confidence diagnostics and batch timings.
 - [Call flows and prompts](docs/call_flows.md) · [Local LLMs, Ollama, LangChain, tools and MCP](docs/local_llms.md).
 - [Repository guide](docs/repository_guide.md) · [Decisions](docs/architecture_decisions.md) · [Agent instructions](AGENTS.md).
+- [Starting a new Python project](docs/starting_a_project.md): a reusable guide drawn from the initial commits.
 
 **[Start the local system step by step](docs/api_usage.md#start-the-local-system):**
 which services to run, terminal commands, OpenAI key setup, Qwen startup and shutdown.

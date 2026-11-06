@@ -11,6 +11,8 @@
 | `config/experiments.toml` | Seven candidates, native estimator settings, explicit fitting policies |
 | `notebooks/model_comparison.ipynb`, `model_comparison.py`, `utils/model_comparison.py` | Matched SVM/OpenAI/Qwen evaluation, batch timings and resumable evidence |
 | `config/model_comparison.toml` | Pilot sampling, datasets, batch size and comparison API settings |
+| `notebooks/qwen_head.ipynb`, `qwen_head.py`, `utils/qwen_head.py` | Frozen Qwen features and one small CPU PyTorch head experiment; isolated dependencies in `notebooks/requirements-qwen.txt` |
+| `config/qwen_head.toml`, `artifacts/qwen_head/` | Bounded pilot settings, samples, cached features, head weights, CV metrics and loss plots |
 | `docs/call_flows.md`, `local_llms.md` | Routing/prompt diagrams, metric interpretation, local operations and production concepts |
 | `artifacts/model_comparison/` | Pilot predictions/metrics, request evidence, figures and runtime identity |
 | `src/banking_query_triage/preprocessing.py` | Stateless text cleaning used by the fitted serving pipeline |

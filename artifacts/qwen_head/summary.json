@@ -1,0 +1,35 @@
+{
+  "config": {
+    "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "seed": 42,
+    "threads": 2,
+    "train_file": "data/raw/train.csv",
+    "test_file": "data/raw/test.csv",
+    "labels_file": "data/raw/categories.json",
+    "output_dir": "artifacts/qwen_head",
+    "train_per_class": 6,
+    "test_per_class": 2,
+    "folds": 3,
+    "hidden_sizes": [
+      32,
+      64
+    ],
+    "dropout": 0.2,
+    "max_length": 64,
+    "feature_batch_size": 2,
+    "batch_size": 64,
+    "max_epochs": 40,
+    "patience": 5,
+    "min_delta": 0.001,
+    "learning_rate": 0.003,
+    "weight_decay": 0.01,
+    "classes": 77
+  },
+  "selected_hidden_size": 64,
+  "refit_epochs": 23,
+  "train_rows": 462,
+  "test_rows": 154,
+  "test_loss": 2.0027694702148438,
+  "test_accuracy": 0.5
+}

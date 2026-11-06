@@ -6,6 +6,7 @@
 - **[All results: CSV](artifacts/cv_experiments/results.csv)** · [Detailed record](artifacts/cv_experiments/results.json).
 - [Report](docs/experiment_report.md): seven fixed candidates; selected TF-IDF/SVM test accuracy **89.42%**.
 - [SVM / OpenAI / Qwen comparison notebook](notebooks/model_comparison.ipynb): matched train/test pilot, confidence diagnostics and batch timings.
+- [Qwen + PyTorch head notebook](notebooks/qwen_head.ipynb): small CPU pilot with frozen final-layer features, three-fold CV, dropout, early stopping and loss plots; separate Python 3.13 setup in the notebook.
 - [Call flows and prompts](docs/call_flows.md) · [Local LLMs, Ollama, LangChain, tools and MCP](docs/local_llms.md).
 - [Repository guide](docs/repository_guide.md) · [Decisions](docs/architecture_decisions.md) · [Agent instructions](AGENTS.md).
 - [Starting a new Python project](docs/starting_a_project.md): a reusable guide drawn from the initial commits.
